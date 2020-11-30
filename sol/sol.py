@@ -1,4 +1,4 @@
-#! python
+#! python2
 from math import sqrt
 	
 def isPrime(n):
@@ -7,16 +7,20 @@ def isPrime(n):
 			return False
 	return True	
 
-def genPrimesStr(n):
-    lst = ''
-	#while (len(lst)<n):
-    	#getNextPrime()
-    
-	#return 
+def genPrimesLst(n):
+    lst = []
+    for i in range(2,20232):
+	print "check ", i
+	if isPrime(i):
+	    lst.append(i)
+    return lst
 
 
 def solution(i):
-	primes = genPrimesStr(i+5+1)
-	print isPrime(7)
+	print("invoke genPrimesLst")
+	primes = genPrimesLst(i+5+1)
+	print "="*10, "  DONE  ", "="*10
+	print primes[-1]
+	print "len = ", len(primes)
 
 solution(4)
