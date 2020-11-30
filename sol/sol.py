@@ -1,5 +1,8 @@
 #! python2
 from math import sqrt
+
+primesLst = [2,3]
+primesStr = '23'
 	
 def isPrime(n):
 	for q in range(2,int(sqrt(n))+1):
@@ -7,20 +10,26 @@ def isPrime(n):
 			return False
 	return True	
 
-def genPrimesLst(n):
-    lst = []
-    for i in range(2,20232):
-	print "check ", i
-	if isPrime(i):
-	    lst.append(i)
-    return lst
+def getNextPrime():
+	global primesLst
+	thisP = primesLst[-1]
+	nextP = thisP + 2
+	while not isPrime(nextP):
+		nextP += 2
+	return nextP
+
+def genPrimesStr():
+	global primesStr
+	global primesLst
+	while len(primesStr) < 10005:
+		p = getNextPrime()
+		primesLst.append(p)
+		primesStr = primesStr + str(p)
+	return primesStr
 
 
 def solution(i):
-	print("invoke genPrimesLst")
-	primes = genPrimesLst(i+5+1)
-	print "="*10, "  DONE  ", "="*10
-	print primes[-1]
-	print "len = ", len(primes)
-
-solution(4)
+	global primesLst
+	global primesStr
+	primes = genPrimesStr()
+	return primes[i:i+5]
