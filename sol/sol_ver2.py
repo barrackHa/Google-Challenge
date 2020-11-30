@@ -29,7 +29,5 @@ def genPrimesStr(i):
 
 
 def solution(i):
-	global primesLst
-	global primesStr
 	primes = genPrimesStr(i)
 	return primes[i:i+5]
