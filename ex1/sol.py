@@ -21,8 +21,8 @@ def getNextPrime():
 def genPrimesStr(i):
 	global primesStr
 	global primesLst
-	print '### ',len(primesStr)
 	while len(primesStr) < i+5:
+		print("looping...")
 		p = getNextPrime()
 		primesLst.append(p)
 		primesStr = primesStr + str(p)
@@ -30,13 +30,17 @@ def genPrimesStr(i):
 
 
 def solution(i):
-	global primesLst
-	global primesStr
 	primes = genPrimesStr(i)
 	return primes[i:i+5]
 
+#print solution(10000)
+#print "#"*40
+#print solution(77)
+#print solution(0)
+print solution(1)
+print solution(2)
 print solution(3)
-print solution(178)
-print solution(10000)
-print solution(18)
-print solution(99)
+print solution(4)
+print solution(5)
+print solution(6)
+#print primesStr
