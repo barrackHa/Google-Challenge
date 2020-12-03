@@ -1,4 +1,3 @@
-readme.txt
 En Route Salute
 ===============
 
