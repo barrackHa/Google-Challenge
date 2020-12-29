@@ -244,3 +244,63 @@ def getMatrixInverse(m):
         for c in range(len(cofactors)):
             cofactors[r][c] = cofactors[r][c]/d
     return cofactors
+
+def calculate_b(m,use_fractions=False):
+        # B = (I-Q)^-1 * R
+        m = sort(m)
+        n = normalize(m,use_fractions=use_fractions)
+        (q, r) = decompose(n)
+        i = identity(len(q))
+        s = subtract(i, q)
+        v = getMatrixInverse(s)
+        b = multiply(v, r)
+        return b
+
+def lcm(a, b):
+    if a > b:
+        greater = a
+    else:
+        greater = b
+
+    while True:
+        if greater % a == 0 and greater % b == 0:
+            lcm = greater
+            break
+        greater += 1
+
+    return lcm
+
+
+def get_lcm_for(l):
+    return reduce(lambda x, y: lcm(x, y), l)
+
+def convert_to_lcd(probs):
+    ret = []
+    least_common_multiple = get_lcm_for([f.denominator for f in probs])
+    for f in probs:
+        if f.denominator != least_common_multiple:
+            ret.append(Fraction(\
+                least_common_multiple / f.denominator * f.numerator,\
+                least_common_multiple\
+            ))
+        else:
+            ret.append(Fraction(f.numerator, least_common_multiple ) )
+    return ret
+
+def markov_probabilities(m ):
+    probs = calculate_b(m, use_fractions=True)[0]
+    return convert_to_lcd(probs)
+
+
+m = [
+  [0,1,0,0,0,1],  
+  [4,0,0,3,2,0],  
+  [0,0,0,0,0,0],  
+  [0,0,0,0,0,0],  
+  [0,0,0,0,0,0],  
+  [0,0,0,0,0,0],  
+]
+
+n = markov_probabilities(m)
+# for l in n:
+print(n)
