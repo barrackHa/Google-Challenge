@@ -279,12 +279,12 @@ def convert_to_lcd(probs):
     least_common_multiple = get_lcm_for([f.denominator for f in probs])
     for f in probs:
         if f.denominator != least_common_multiple:
-            ret.append(Fraction(\
-                least_common_multiple / f.denominator * f.numerator,\
-                least_common_multiple\
-            ))
+            ret.append(
+                least_common_multiple / f.denominator * f.numerator
+            )
         else:
-            ret.append(Fraction(f.numerator, least_common_multiple ) )
+            ret.append(f.numerator)
+    ret.append(least_common_multiple)    
     return ret
 
 def markov_probabilities(m ):
@@ -304,3 +304,24 @@ m = [
 n = markov_probabilities(m)
 # for l in n:
 print(n)
+
+n2 = markov_probabilities([
+    [0, 2, 1, 0, 0], 
+    [0, 0, 0, 3, 4], 
+    [0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0]
+])
+print n2 == [7, 6, 8, 21]
+
+
+n3 = markov_probabilities([
+    [0, 1, 0, 0, 0, 1], 
+    [4, 0, 0, 3, 2, 0], 
+    [0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0, 0]
+])
+
+print n3 == [0, 3, 2, 9, 14]
