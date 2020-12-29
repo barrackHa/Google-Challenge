@@ -33,10 +33,13 @@ def num_of_transients(m):
     raise Exception("Not a valid AMC matrix: no absorbing (terminal) states")
 
 
-# decompose input matrix `m` on Q (t-by-t) and R (t-by-r) components
-# `t` is the number of transient states
 def decompose(m):
+    """
+    decompose input matrix m on Q (t-by-t) and R (t-by-r) components
+    t is the number of transient states
+    """
     t = num_of_transients(m)
+    print t
     if t == 0:
         raise Exception("No transient states. At least initial state is needed.")
 
@@ -276,6 +279,8 @@ def convert_to_lcd(probs):
     return ret
 
 def solution(m):
+    if len(m) == 1:
+        return [1,1]
     probs = calculate_b(m)[0]
     return convert_to_lcd(probs)
 
@@ -312,3 +317,5 @@ n3 = solution([
 ])
 
 print n3 == [0, 3, 2, 9, 14]
+
+print solution([[0]])
