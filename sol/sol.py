@@ -107,19 +107,17 @@ def swap(m, i, j):
         n.append(nRow)
     return n
 
-# reorganize matrix so zero-rows go last (preserving zero rows order)
-def sort(m):
-    size = len(m)
 
+def sort(m):
+    # reorganize matrix so zero-rows go last (preserving zero rows order)
+    size = len(m)
     zero_row = -1
     for r in range(size):
-        sum = 0
-        for c in range(size):
-            sum += m[r][c]
-        if sum == 0:
+        s = sum(m[r])
+        if s == 0:
             # we have found all-zero row, remember it
             zero_row = r
-        if sum != 0 and zero_row > -1:
+        if s != 0 and zero_row > -1:
             # we have found non-zero row after all-zero row - swap these rows
             n = swap(m, r, zero_row)
             # and repeat from the begining
@@ -128,27 +126,17 @@ def sort(m):
     return m
 
 # normalize matrix `m`
-def normalize(m, use_fractions=False ):
+def normalize(m):
     n = []
     for r in range(len(m)):
-        sum = 0
-        cols = len(m[r])
-        for c in range(cols):
-            sum += m[r][c]
-
+        s = sum(m[r])
         nRow = []
-
-        if sum == 0:
+        if s == 0:
             # all-zero row
             nRow = m[r]
         else:
-            for c in range(cols):
-                # FIXME it's strange but python 2.7 does 
-                # not automatically convert decimals to floats
-                if use_fractions:
-                    nRow.append(Fraction(m[r][c], sum))
-                else:
-                    nRow.append(float(m[r][c])/sum)
+            for c in range(len(m[r])):
+                nRow.append(Fraction(m[r][c], s))
         n.append(nRow)
     return n
 
@@ -245,10 +233,10 @@ def getMatrixInverse(m):
             cofactors[r][c] = cofactors[r][c]/d
     return cofactors
 
-def calculate_b(m,use_fractions=False):
+def calculate_b(m):
         # B = (I-Q)^-1 * R
         m = sort(m)
-        n = normalize(m,use_fractions=use_fractions)
+        n = normalize(m)
         (q, r) = decompose(n)
         i = identity(len(q))
         s = subtract(i, q)
@@ -288,7 +276,7 @@ def convert_to_lcd(probs):
     return ret
 
 def solution(m):
-    probs = calculate_b(m, use_fractions=True)[0]
+    probs = calculate_b(m)[0]
     return convert_to_lcd(probs)
 
 
