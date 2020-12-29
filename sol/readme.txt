@@ -94,3 +94,5 @@ solution.solution([
 
 Output:
     [0, 3, 2, 9, 14]
+
+absorbing markov chains
