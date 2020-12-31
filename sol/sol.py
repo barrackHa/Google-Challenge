@@ -12,15 +12,13 @@
 # Absorbing Probabilities are determined as:
 # B = (I - Q)^-1 * R
 
-
-# get number of transients states
-# assume absorbing states follow transient states w/o interlieveing
 from fractions import Fraction
 
 def num_of_transients(m):
     """
         Take m - a sorted square matrix under the conditions of
-        the assignment and return the number of zero - rows 
+        the assignment and return the number of transients states.
+        assume absorbing states follow transient states w/o interlieveing.
     """
     dim = len(m)
     r = 0
@@ -40,27 +38,30 @@ def decompose(m):
         Q.append(m[r][:t])
         R.append(m[r][t:])
     return Q, R
-    
-# return Identity matrix of size `t`
+
 def identity(t):
+    """
+        Create a tXt identity matrix
+    """
     m = []
     for i in range(t):
-        r = []
-        for j in range(t):
-            r.append(int(i == j))
+        r = [int(i == j) for j in range(t)]
         m.append(r)
     return m
 
-# check if the matrix is zero
 def isZero(m):
+    """
+        Return True IFF m is the zero matrix
+    """
     row_summed = [sum(r) for r in m] 
-    return sum(row_summed) == 0 
+    return sum(row_summed) == 0
 
-
-# swap i,j rows/columns of a square matrix `m`
 def swap(m, i, j):
+    """
+        swap i,j rows/columns of a square matrix m
+    """
     n = []
-    s = len(m)
+    s = len(m) 
 
     if i == j:
         # no need to swap
@@ -83,8 +84,11 @@ def swap(m, i, j):
         n.append(nRow)
     return n
 
-# reorganize matrix so zero-rows go last (preserving zero rows order)
 def sort(m):
+    """
+        reorganize matrix so zero-rows go last 
+        (preserving zero rows order)
+    """
     size = len(m)
 
     zero_row = -1
@@ -101,8 +105,10 @@ def sort(m):
     #nothing to sort, return
     return m
 
-# normalize matrix `m`
 def normalize(m):
+    """
+        normalize matrix m
+    """
     n = []
     for row in m:
         nRow = []
@@ -111,8 +117,7 @@ def normalize(m):
             # all-zero row
             nRow = row
         else:
-            for num in row:
-                nRow.append(Fraction(num, denom))
+            nRow = [Fraction(num, denom) for num in row]
         n.append(nRow)
     return n
 
@@ -256,8 +261,6 @@ def solution(m):
         return [1,1]
     probs = calculate_b(m)[0]
     return convert_to_lcd(probs)
-
-
 
 
 # m = [
