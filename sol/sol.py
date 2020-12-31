@@ -121,18 +121,21 @@ def normalize(m):
         n.append(nRow)
     return n
 
-# subtract two matrices
 def subtract(i, q):
+    """
+        Subtract two square matrices with equal dims.
+    """
     if len(i) != len(i[0]) or len(q) != len(q[0]):
         raise Exception("non-square matrices")
 
-    if len(i) != len(q) or len(i[0]) != len(q[0]):
+    if len(i) != len(q):
         raise Exception("Cannot subtract matrices of different sizes")
 
     s = []
-    for r in range(len(i)):
+    d = len(i) 
+    for r in range(d):
         sRow = []
-        for c in range(len(i[r])):
+        for c in range(d):
             sRow.append(i[r][c] - q[r][c])
         s.append(sRow)
     return s
@@ -166,10 +169,11 @@ def transposeMatrix(m):
     for r in range(len(m)):
         tRow = []
         for c in range(len(m[r])):
-            if c == r:
-                tRow.append(m[r][c])
-            else:
-                tRow.append(m[c][r])
+            tRow.append(m[c][r])
+            # if c == r:
+            #     tRow.append(m[r][c])
+            # else:
+            #     tRow.append(m[c][r])
         t.append(tRow)
     return t
 
