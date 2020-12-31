@@ -40,9 +40,7 @@ def decompose(m):
     return Q, R
 
 def identity(t):
-    """
-        Create a tXt identity matrix
-    """
+    """Create a t by t identity matrix."""
     m = []
     for i in range(t):
         r = [int(i == j) for j in range(t)]
@@ -50,16 +48,12 @@ def identity(t):
     return m
 
 def isZero(m):
-    """
-        Return True IFF m is the zero matrix
-    """
+    """Return True IFF m is the zero matrix."""
     row_summed = [sum(r) for r in m] 
     return sum(row_summed) == 0
 
 def swap(m, i, j):
-    """
-        swap i,j rows/columns of a square matrix m
-    """
+    """ Swap i,j rows/columns of a square matrix m."""
     n = []
     s = len(m) 
 
@@ -106,9 +100,7 @@ def sort(m):
     return m
 
 def normalize(m):
-    """
-        normalize matrix m
-    """
+    """ Normalize matrix m """
     n = []
     for row in m:
         nRow = []
@@ -122,9 +114,7 @@ def normalize(m):
     return n
 
 def subtract(i, q):
-    """
-        Subtract two square matrices with equal dims.
-    """
+    """ Subtract two square matrices with equal dims."""
     if len(i) != len(i[0]) or len(q) != len(q[0]):
         raise Exception("non-square matrices")
 
@@ -163,21 +153,22 @@ def multiply(a, b):
         m.append(mRow)
     return m
 
-# transpose matrix
 def transposeMatrix(m):
+    """ Transpose a square matrix """
     t = []
-    for r in range(len(m)):
+    dim = range(len(m))
+    for i in dim:
         tRow = []
-        for c in range(len(m[r])):
-            tRow.append(m[c][r])
+        for j in dim:
+            tRow.append(m[j][i])
         t.append(tRow)
     return t
 
 def getMatrixMinor(m,i,j):
     return [row[:j] + row[j+1:] for row in (m[:i]+m[i+1:])]
 
-# matrix determinant
 def getMatrixDeternminant(m):
+    """Return matrix determinant using Laplace expansion."""
     #base case for 2x2 matrix
     if len(m) == 2:
         return m[0][0]*m[1][1]-m[0][1]*m[1][0]
@@ -188,8 +179,11 @@ def getMatrixDeternminant(m):
 
     return d
 
-# matrix inversion
 def getMatrixInverse(m):
+    """
+        Return matrix invers for inversable matrix m.
+        m^(-1) = (det(m))^(-1) * adj(m)
+    """
     d = getMatrixDeternminant(m)
 
     if d == 0:
@@ -215,24 +209,29 @@ def getMatrixInverse(m):
     return cofactors
 
 def calculateB(m):
-        # B = (I-Q)^-1 * R
-        m = sort(m)
-        n = normalize(m)
-        (q, r) = decompose(n)
-        i = identity(len(q))
-        s = subtract(i, q)
-        v = getMatrixInverse(s)
-        b = multiply(v, r)
-        return b
+    """ 
+        return B = (I-Q)^-1 * R = V*R 
+        A limiting absorbing Markov transition matrix.
+    """
+    m = sort(m)
+    n = normalize(m)
+    (q, r) = decompose(n)
+    i = identity(len(q))
+    s = subtract(i, q)
+    v = getMatrixInverse(s)
+    b = multiply(v, r)
+    return b
 
-def lcm(a, b):
-    return (a*b)/gcd(a,b)
-    
 def gcd(a, b):  
+    """Euclid's algorithm for greatest common divisor"""
     if a == 0 : 
         return b  
     return gcd(b%a, a) 
 
+def lcm(a, b):
+    """Return least common multiple of two int's"""
+    return (a*b)/gcd(a,b)
+    
 def lcmOfList(l):
     return reduce(lambda x, y: lcm(x, y), l)
 
@@ -258,8 +257,6 @@ def solution(m):
         return [1,1]
     probs = calculateB(m)[0]
     return listTermStates(probs)
-
-
 
 
 # m = [
