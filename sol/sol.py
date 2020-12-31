@@ -170,10 +170,6 @@ def transposeMatrix(m):
         tRow = []
         for c in range(len(m[r])):
             tRow.append(m[c][r])
-            # if c == r:
-            #     tRow.append(m[r][c])
-            # else:
-            #     tRow.append(m[c][r])
         t.append(tRow)
     return t
 
@@ -218,7 +214,7 @@ def getMatrixInverse(m):
             cofactors[r][c] = cofactors[r][c]/d
     return cofactors
 
-def calculate_b(m):
+def calculateB(m):
         # B = (I-Q)^-1 * R
         m = sort(m)
         n = normalize(m)
@@ -228,7 +224,7 @@ def calculate_b(m):
         v = getMatrixInverse(s)
         b = multiply(v, r)
         return b
-        
+
 def lcm(a, b):
     return (a*b)/gcd(a,b)
     
@@ -237,27 +233,33 @@ def gcd(a, b):
         return b  
     return gcd(b%a, a) 
 
-def get_lcm_for(l):
+def lcmOfList(l):
     return reduce(lambda x, y: lcm(x, y), l)
 
-def convert_to_lcd(probs):
-    ret = []
-    least_common_multiple = get_lcm_for([f.denominator for f in probs])
-    for f in probs:
-        if f.denominator != least_common_multiple:
-            ret.append(
-                least_common_multiple / f.denominator * f.numerator
-            )
-        else:
-            ret.append(f.numerator)
-    ret.append(least_common_multiple)    
-    return ret
+def listTermStates(probs):
+    """
+        The matrix B = (I - Q)^-1 * R is the limit of the Absorbing Markov Chain
+        transition matrix. It's first row gives the probs arg as a list of
+        Fraction instanses. returns an array of ints for each terminal state 
+        giving the exact probabilities of each terminal state, 
+        represented as the numerator for each state, 
+        then the denominator for all of them at the end and in simplest form. 
+    """
+    probsLcm = lcmOfList([f.denominator for f in probs])
+    termStates = [
+        (probsLcm / f.denominator) * f.numerator
+        for f in probs    
+    ]
+    termStates.append(probsLcm)    
+    return termStates
 
 def solution(m):
     if len(m) == 1:
         return [1,1]
-    probs = calculate_b(m)[0]
-    return convert_to_lcd(probs)
+    probs = calculateB(m)[0]
+    return listTermStates(probs)
+
+
 
 
 # m = [
