@@ -113,20 +113,18 @@ def sort(m):
 
     zero_row = -1
     for r in range(size):
-        sum = 0
-        for c in range(size):
-            sum += m[r][c]
-        if sum == 0:
+        r_sum =sum(m[r])
+        if r_sum == 0:
             # we have found all-zero row, remember it
             zero_row = r
-        if sum != 0 and zero_row > -1:
+        if r_sum != 0 and zero_row > -1:
             # we have found non-zero row after all-zero row - swap these rows
             n = swap(m, r, zero_row)
             # and repeat from the begining
             return sort(n)
     #nothing to sort, return
     return m
-
+    
 # normalize matrix `m`
 def normalize(m):
     n = []
