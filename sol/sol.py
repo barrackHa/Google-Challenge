@@ -130,21 +130,15 @@ def sort(m):
 # normalize matrix `m`
 def normalize(m):
     n = []
-    for r in range(len(m)):
-        sum = 0
-        cols = len(m[r])
-        for c in range(cols):
-            sum += m[r][c]
-
+    for row in m:
         nRow = []
-
-        if sum == 0:
+        denom = sum(row) 
+        if denom == 0:
             # all-zero row
-            nRow = m[r]
+            nRow = row
         else:
-            for c in range(cols):
-                nRow.append(Fraction(m[r][c], sum))
-                
+            for num in row:
+                nRow.append(Fraction(num, denom))
         n.append(nRow)
     return n
 
