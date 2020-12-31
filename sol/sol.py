@@ -71,11 +71,8 @@ def identity(t):
 
 # check if the matrix is zero
 def isZero(m):
-    for r in range(len(m)):
-        for c in range(len(m[r])):
-            if m[r][c] != 0:
-                return False
-    return True
+    row_summed = [sum(r) for r in m] 
+    return sum(row_summed) == 0 
 
 
 # swap i,j rows/columns of a square matrix `m`
