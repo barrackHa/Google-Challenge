@@ -33,13 +33,10 @@ def num_of_transients(m):
     raise Exception("Not a valid AMC matrix: no absorbing (terminal) states")
 
 
+# decompose input matrix `m` on Q (t-by-t) and R (t-by-r) components
+# `t` is the number of transient states
 def decompose(m):
-    """
-    decompose input matrix m on Q (t-by-t) and R (t-by-r) components
-    t is the number of transient states
-    """
     t = num_of_transients(m)
-    print t
     if t == 0:
         raise Exception("No transient states. At least initial state is needed.")
 
@@ -110,17 +107,19 @@ def swap(m, i, j):
         n.append(nRow)
     return n
 
-
+# reorganize matrix so zero-rows go last (preserving zero rows order)
 def sort(m):
-    # reorganize matrix so zero-rows go last (preserving zero rows order)
     size = len(m)
+
     zero_row = -1
     for r in range(size):
-        s = sum(m[r])
-        if s == 0:
+        sum = 0
+        for c in range(size):
+            sum += m[r][c]
+        if sum == 0:
             # we have found all-zero row, remember it
             zero_row = r
-        if s != 0 and zero_row > -1:
+        if sum != 0 and zero_row > -1:
             # we have found non-zero row after all-zero row - swap these rows
             n = swap(m, r, zero_row)
             # and repeat from the begining
@@ -132,14 +131,20 @@ def sort(m):
 def normalize(m):
     n = []
     for r in range(len(m)):
-        s = sum(m[r])
+        sum = 0
+        cols = len(m[r])
+        for c in range(cols):
+            sum += m[r][c]
+
         nRow = []
-        if s == 0:
+
+        if sum == 0:
             # all-zero row
             nRow = m[r]
         else:
-            for c in range(len(m[r])):
-                nRow.append(Fraction(m[r][c], s))
+            for c in range(cols):
+                nRow.append(Fraction(m[r][c], sum))
+                
         n.append(nRow)
     return n
 
@@ -285,37 +290,14 @@ def solution(m):
     return convert_to_lcd(probs)
 
 
-m = [
-  [0,1,0,0,0,1],  
-  [4,0,0,3,2,0],  
-  [0,0,0,0,0,0],  
-  [0,0,0,0,0,0],  
-  [0,0,0,0,0,0],  
-  [0,0,0,0,0,0],  
-]
-
-n = solution(m)
-print(n == [0, 3, 2, 9, 14])
-
-n2 = solution([
-    [0, 2, 1, 0, 0], 
-    [0, 0, 0, 3, 4], 
-    [0, 0, 0, 0, 0], 
-    [0, 0, 0, 0, 0], 
-    [0, 0, 0, 0, 0]
-])
-print n2 == [7, 6, 8, 21]
 
 
-n3 = solution([
-    [0, 1, 0, 0, 0, 1], 
-    [4, 0, 0, 3, 2, 0], 
-    [0, 0, 0, 0, 0, 0], 
-    [0, 0, 0, 0, 0, 0], 
-    [0, 0, 0, 0, 0, 0], 
-    [0, 0, 0, 0, 0, 0]
-])
+# m = [
+#     [0, 2, 1, 0, 0], 
+#     [0, 0, 0, 3, 4], 
+#     [0, 0, 0, 0, 0], 
+#     [0, 0, 0, 0, 0], 
+#     [0, 0, 0, 0, 0]
+# ]
 
-print n3 == [0, 3, 2, 9, 14]
-
-print solution([[0]])
+# print(swap(m,0,1))
