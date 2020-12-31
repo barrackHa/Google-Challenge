@@ -28,32 +28,19 @@ def num_of_transients(m):
         r += 1
     return r
 
-# decompose input matrix `m` on Q (t-by-t) and R (t-by-r) components
-# `t` is the number of transient states
 def decompose(m):
+    """
+        decompose input matrix m on Q (t-by-t) and R (t-by-r) components
+        t is the number of transient states. r = dim(m) - t
+    """
     t = num_of_transients(m)
-    if t == 0:
-        raise Exception("No transient states. At least initial state is needed.")
-
     Q = []
-    for r in range(t):
-        qRow = []
-        for c in range(t):
-            qRow.append(m[r][c])
-        Q.append(qRow)
-    if Q == []:
-        raise Exception("Not a valid AMC matrix: no transient states")
-
     R = []
     for r in range(t):
-        rRow = []
-        for c in range(t, len(m[r])):
-            rRow.append(m[r][c])
-        R.append(rRow)
-    if R == []:
-        raise Exception("Not a valid AMC matrix: missing absorbing states")
+        Q.append(m[r][:t])
+        R.append(m[r][t:])
     return Q, R
-
+    
 # return Identity matrix of size `t`
 def identity(t):
     m = []
