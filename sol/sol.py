@@ -83,9 +83,6 @@ def swap(m, i, j):
     n = []
     s = len(m)
 
-    if s != len(m[0]):
-        raise Exception("Cannot swap non-square matrix")
-
     if i == j:
         # no need to swap
         return m
@@ -124,7 +121,7 @@ def sort(m):
             return sort(n)
     #nothing to sort, return
     return m
-    
+
 # normalize matrix `m`
 def normalize(m):
     n = []
