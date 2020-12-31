@@ -18,20 +18,15 @@
 from fractions import Fraction
 
 def num_of_transients(m):
-    if len(m) == 0:
-        raise Exception("Can't get transient states of empty matrix")
-
-    for r in range(len(m)):
-        for c in range(len(m[r])):
-            if m[r][c] != 0:
-                # this is not an all-zero row, try next one
-                break
-        else:
-            # has just finished looping over an empty row (i.e. w/o `break`)
-            return r
-    # reached end of table and didn't encounter all-zero row - no absorbing states
-    raise Exception("Not a valid AMC matrix: no absorbing (terminal) states")
-
+    """
+        Take m - a sorted square matrix under the conditions of
+        the assignment and return the number of zero - rows 
+    """
+    dim = len(m)
+    r = 0
+    while (r < dim and sum(m[r]) != 0):
+        r += 1
+    return r
 
 # decompose input matrix `m` on Q (t-by-t) and R (t-by-r) components
 # `t` is the number of transient states
