@@ -228,21 +228,14 @@ def calculate_b(m):
         v = getMatrixInverse(s)
         b = multiply(v, r)
         return b
-
+        
 def lcm(a, b):
-    if a > b:
-        greater = a
-    else:
-        greater = b
-
-    while True:
-        if greater % a == 0 and greater % b == 0:
-            lcm = greater
-            break
-        greater += 1
-
-    return lcm
-
+    return (a*b)/gcd(a,b)
+    
+def gcd(a, b):  
+    if a == 0 : 
+        return b  
+    return gcd(b%a, a) 
 
 def get_lcm_for(l):
     return reduce(lambda x, y: lcm(x, y), l)
