@@ -28,8 +28,8 @@ def num_of_transients(m):
 
 def decompose(m):
     """
-        decompose input matrix m on Q (t-by-t) and R (t-by-r) components
-        t is the number of transient states. r = dim(m) - t
+        decompose input matrix m on Q (t-by-t) and R (t-by-r) components.
+        t is the number of transient states. r = dim(m) - t.
     """
     t = num_of_transients(m)
     Q = []
@@ -54,29 +54,15 @@ def isZero(m):
 
 def swap(m, i, j):
     """ Swap i,j rows/columns of a square matrix m."""
-    n = []
-    s = len(m) 
-
     if i == j:
         # no need to swap
         return m
-
-    for r in range(s):
-        nRow = []
-        tmpRow = m[r]
-        if r == i:
-            tmpRow = m[j]
-        if r == j:
-            tmpRow = m[i]
-        for c in range(s):
-            tmpEl = tmpRow[c]
-            if c == i:
-                tmpEl = tmpRow[j]
-            if c == j:
-                tmpEl = tmpRow[i]
-            nRow.append(tmpEl)
-        n.append(nRow)
-    return n
+    # swap column space
+    for r in m:
+        r[i], r[j] = r[j], r[i]
+    # swap row space
+    m[i], m[j] = m[j], m[i]
+    return m
 
 def sort(m):
     """
