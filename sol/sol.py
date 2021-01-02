@@ -181,7 +181,7 @@ def getMatrixInverse(m):
         return [[m[1][1]/d, -1*m[0][1]/d],
                 [-1*m[1][0]/d, m[0][0]/d]]
 
-    #find matrix of cofactors
+    #find matrix of cofactors AKA adj(m)
     cofactors = []
     for r in range(len(m)):
         cofactorRow = []
@@ -190,6 +190,8 @@ def getMatrixInverse(m):
             cofactorRow.append(((-1)**(r+c)) * getMatrixDeternminant(minor))
         cofactors.append(cofactorRow)
     cofactors = transposeMatrix(cofactors)
+    
+    # Divide adj by the determinant
     for r in range(len(cofactors)):
         for c in range(len(cofactors)):
             cofactors[r][c] = cofactors[r][c]/d
