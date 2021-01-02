@@ -14,7 +14,7 @@
 
 from fractions import Fraction
 
-def num_of_transients(m):
+def transientsCount(m):
     """
         Take m - a sorted square matrix under the conditions of
         the assignment and return the number of transients states.
@@ -33,7 +33,7 @@ def decompose(m):
         decompose input matrix m on Q (t-by-t) and R (t-by-r) components.
         t is the number of transient states. r = dim(m) - t.
     """
-    t = num_of_transients(m)
+    t = transientsCount(m)
     Q = []
     R = []
     for r in range(t):
