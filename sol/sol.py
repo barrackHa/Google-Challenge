@@ -22,6 +22,8 @@ def num_of_transients(m):
     """
     dim = len(m)
     r = 0
+    # Assuming it is guaranteed that no matter which state the ore is in,
+    # there is a path from that state to a terminal state.
     while (r < dim and sum(m[r]) != 0):
         r += 1
     return r
@@ -116,8 +118,18 @@ def subtract(i, q):
         s.append(sRow)
     return s
 
-# multiply two matrices
+def transposeMatrix(m):
+    """ Transpose matrix """
+    t = []
+    for i in range(len(m)):
+        tRow = []
+        for j in range(len(m[0])):
+            tRow.append(m[j][i])
+        t.append(tRow)
+    return t
+
 def multiply(a, b):
+    """Return the product of 2 matrices of incompatible dims."""
     if a == [] or b == []:
         raise Exception("Cannot multiply empty matrices")
 
@@ -132,23 +144,12 @@ def multiply(a, b):
     for r in range(rows):
         mRow = []
         for c in range(cols):
-            sum = 0
+            dotProd = 0
             for i in range(iters):
-                sum += a[r][i]*b[i][c]
-            mRow.append(sum)
+                dotProd += a[r][i]*b[i][c]
+            mRow.append(dotProd)
         m.append(mRow)
     return m
-
-def transposeMatrix(m):
-    """ Transpose a square matrix """
-    t = []
-    dim = range(len(m))
-    for i in dim:
-        tRow = []
-        for j in dim:
-            tRow.append(m[j][i])
-        t.append(tRow)
-    return t
 
 def getMatrixMinor(m,i,j):
     return [row[:j] + row[j+1:] for row in (m[:i]+m[i+1:])]
