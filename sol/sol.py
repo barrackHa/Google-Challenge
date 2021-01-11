@@ -234,7 +234,11 @@ class Rectangle():
         
 
 
-r = Rectangle(Point(0,0), [1,1])
+# r = Rectangle(Point(0,0), [2,2])
+# p1 = Point(1,1)
+# p0 = Point(0,0)
+# p3 = Point(3,3)
+# print r.isPointInside(p0), r.isPointInside(p1), r.isPointInside(p3)
 #print r.mirrorRight()
 # print 'east: ', r.mirrorFactory('east')
 # print '\nwest: ' , r.mirrorFactory('west')
