@@ -23,6 +23,7 @@ class Point():
         return '({},{})'.format(self.x,self.y)
 
     def __eq__(self, other):
+        """2 Point are equal iff they are the same on the plane"""
         x_eq = self.x == other.x
         y_eq = self.y == other.y
         return x_eq and y_eq
