@@ -192,6 +192,7 @@ class Rectangle():
         return self.points['topLeft'].x
 
     def isPointInside(self, p):
+        """Return True iff point p is inside rec' border (including)"""
         x,y = p[0], p[1]
         A = self.left <= x <= self.right
         B = self.bottom <= y <= self.top
@@ -233,7 +234,6 @@ class Rectangle():
         return new_rec
         
 
-
 # r = Rectangle(Point(0,0), [2,2])
 # p1 = Point(1,1)
 # p0 = Point(0,0)
@@ -262,9 +262,18 @@ class Tile():
         """
         self.origin = Point(origin[0], origin[1])
         self.rec = Rectangle(self.origin, dimensions)
+
+        friend = Point(friend[0], friend[1])
+        foe = Point(foe[0], foe[1])
+        withinParam = self.rec.isPointInside(friend)
+        withinParam &=  self.rec.isPointInside(foe)
+        if not withinParam:  
+            raise Exception('Point must be inside the rectangle') 
+        
+        self.friend = friend
+        self.foe = foe
         self.dim = tuple(dimensions)
-        self.friend = Point(friend[0], friend[1])
-        self.foe = Point(foe[0], foe[1])
+        
         
     def mirrorFactory(self, d):
         # super('classobj').mirrorFactory('up')
@@ -273,6 +282,7 @@ class Tile():
     # def toOrigens(self):
 
 t = Tile([3, 2],[0,0],[1, 1],[2, 1])
+# tErr = Tile([3, 2],[0,0],[1, 9],[2, 1])
 print t.mirrorFactory(1)
 
 def solution(dimensions, your_position, guard_position, distance):
