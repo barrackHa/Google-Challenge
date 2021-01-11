@@ -22,6 +22,11 @@ class Point():
     def __str__(self):
         return '({},{})'.format(self.x,self.y)
 
+    def __eq__(self, other):
+        x_eq = self.x == other.x
+        y_eq = self.y == other.y
+        return x_eq and y_eq
+
     def copy(self):
         return Point(self.x, self.y)
 
@@ -75,7 +80,11 @@ class Point():
         y = r * math.cos(theta)
         return cls(x,y)
 
-# p = Point(2,3)]
+p = Point(2,3)
+p0 = Point(0,0)
+o0 = Point(0,0)
+print p == p0
+print p0 == o0
 # print p.verticalMirror(3)
 # print p.horizontalMirror(2)
 
@@ -273,17 +282,32 @@ class Tile():
         self.friend = friend
         self.foe = foe
         self.dim = tuple(dimensions)
+        self.mirrors = {}
         
+    def mirrorFactory(self, d='right'):
+        directions = {'left': None, 'right': None, 'up': None}
         
-    def mirrorFactory(self, d):
-        # super('classobj').mirrorFactory('up')
-        print "tile mirror factory"
-        return
-    # def toOrigens(self):
+        mirrorXPosition = self.rec.right
+        mirrorFriend = self.friend.verticalMirror(mirrorXPosition)
+        mirrorFoe = self.foe.verticalMirror(mirrorXPosition)
+        # print "{} -> {}, {} -> {} by mirror x = {}".\
+        #     format(
+        #         self.friend, 
+        #         mirrorFriend, 
+        #         self.foe,
+        #         mirrorFoe,
+        #         mirrorXPosition
+        #     )
+        mirrorOrigin = self.rec.points['bottomRight']
+        d = self.dim
+
+        newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
+        self.mirrors['right'] = newTile
+        return newTile
 
 t = Tile([3, 2],[0,0],[1, 1],[2, 1])
 # tErr = Tile([3, 2],[0,0],[1, 9],[2, 1])
-print t.mirrorFactory(1)
+print t.mirrorFactory('right').friend
 
 def solution(dimensions, your_position, guard_position, distance):
     x1, y1 = your_position
