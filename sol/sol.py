@@ -24,6 +24,16 @@ class Point():
 
     def copy(self):
         return Point(self.x, self.y)
+
+    @property
+    def x(self):
+        """Return the x coordinate (vertical)"""
+        return self.x
+
+    @property
+    def y(self):
+        """Return the y coordinate (horizontal)"""
+        return self.y
     
     @property
     def polarCoordinates(self):
@@ -160,6 +170,33 @@ class Rectangle():
         for n, p in self:
             s += '{}: {}\n'.format(n, str(p)) 
         return s[:-1] 
+
+    @property
+    def top(self):
+        """The y componenet of the rectangl top side"""
+        return self.points['topRight'].y
+
+    @property
+    def bottom(self):
+        """The y componenet of the rectangl bottom side"""
+        return self.points['bottomRight'].y
+
+    @property
+    def right(self):
+        """The x componenet of the rectangl right side"""
+        return self.points['topRight'].x
+
+    @property
+    def left(self):
+        """The x componenet of the rectangl left side"""
+        return self.points['topLeft'].x
+
+    def isPointInside(self, p):
+        x,y = p[0], p[1]
+        A = self.left <= x <= self.right
+        B = self.bottom <= y <= self.top
+        return (A and B)
+
 
     def mirrorFactory(self, direction):
         """
