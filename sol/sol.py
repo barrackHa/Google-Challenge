@@ -15,6 +15,7 @@ class Point():
         self.y = y
         self.r = math.sqrt(x*x + y*y) 
         self.theta = math.atan(float(self.y)/self.x) if x != 0 else math.pi/2
+        return
 
     def __getitem__(self,i):
         return [self.x, self.y][i]
@@ -27,6 +28,9 @@ class Point():
         x_eq = self.x == other.x
         y_eq = self.y == other.y
         return x_eq and y_eq
+
+    def __hash__(self):
+        return hash(tuple(self))
 
     def copy(self):
         return Point(self.x, self.y)
@@ -102,6 +106,7 @@ class LineEquation():
         self.b = b
         self.y = lambda x: s*x + b
         self.r = lambda theta: b / (math.sin(theta) - s*math.cos(theta))
+        return
 
     def __call__(self, x, polar = False):
         return self.r(x) if polar else self.y(x)
@@ -176,6 +181,7 @@ class Rectangle():
         self.length = dimensions[0]
         self.hight = dimensions[1]
         self.mirrors = {}
+        return
 
     def __iter__(self):
         for i in self.points:
@@ -290,6 +296,7 @@ class Tile():
         self.foe = foe
         self.dim = tuple(dimensions)
         self.mirrors = {}
+        return
         
     def mirrorFactory(self, d='right'):
         directions = {'left': None, 'right': None, 'up': None}
@@ -312,9 +319,65 @@ class Tile():
         self.mirrors['right'] = newTile
         return newTile
 
-t = Tile([3, 2],[0,0],[1, 1],[2, 1])
+    def mirrorUp(self, d='up'):
+        
+        mirrorYPosition = self.rec.top
+        mirrorFriend = self.friend.horizontalMirror(mirrorYPosition)
+        mirrorFoe = self.foe.horizontalMirror(mirrorYPosition)
+        # print "{} -> {}, {} -> {} by mirror x = {}".\
+        #     format(
+        #         self.friend, 
+        #         mirrorFriend, 
+        #         self.foe,
+        #         mirrorFoe,
+        #         mirrorXPosition
+        #     )
+        mirrorOrigin = self.rec.points['topLeft']
+        d = self.dim
+
+        newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
+        self.mirrors['up'] = newTile
+        return newTile
+    
+
+# t = Tile([3, 2],[0,0],[1, 1],[2, 1])
 # tErr = Tile([3, 2],[0,0],[1, 9],[2, 1])
-print t.mirrorFactory('right').friend
+#print t.mirrorFactory('right').friend
+
+class Grid():
+    def __init__(self, origTile, distance):
+        dx, dy = origTile.dim
+        numOfTilesHorizon = int(math.ceil(float(distance)/dx))
+        numOfTilesVert = int(math.ceil(float(distance)/dx))
+        print numOfTilesHorizon, numOfTilesVert
+        grid = [
+            [None for _ in range(numOfTilesHorizon)] 
+            for _ in range(numOfTilesVert) 
+        ]
+        origMe = origTile.friend
+        grid[0][0] = origTile
+
+        for i in range(numOfTilesVert):
+            if i>0 :
+                grid[i][0] = grid[i-1][0].mirrorUp()
+            for j in range(1,numOfTilesHorizon):
+                grid[i][j] = grid[i][j-1].mirrorFactory()
+        
+        targetList = [] 
+        # print grid
+
+
+
+t = Tile([3, 2],[0,0],[1, 1],[2, 1])
+g = Grid(t, 4)
+
+p = Point(2,3)
+p0 = Point(0,0)
+o0 = Point(0,0)
+# lst = [tuple(p),tuple(p0),tuple(o0)]
+s = set([p,p0,o0])
+for p in s:
+    print p
 
 def solution(dimensions, your_position, guard_position, distance):
     x1, y1 = your_position
