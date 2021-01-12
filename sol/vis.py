@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import math
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle, Circle
+# matplotlib.patches.Circle((x, y), r=5, **kwargs)
 
 
 class Point():
@@ -62,9 +63,9 @@ class Point():
         dy = (self.y - other.y)**2
         return math.sqrt(dx+dy)
 
-    def addPointToAx(self, ax, colur):
+    def addPointToAx(self, ax, color):
         x,y = tuple(self)    
-        ax.scatter(x, y, s=10, facecolor=colur)
+        ax.scatter(x, y, s=10, facecolor=color)
         return
 
 class MyRectangle():
@@ -126,13 +127,13 @@ class MyRectangle():
         B = self.bottom <= y <= self.top
         return (A and B)
     
-    def addRecToAx(self, ax):
+    def addRecToAx(self, ax, color='pink'):
         orignPoint = tuple(self.points['bottomLeft'])
         w = self.length
         h = self.hight
         ax.add_patch(Rectangle(
             orignPoint, w, h,
-             edgecolor = 'pink',
+             edgecolor = color,
              fill=False,
              lw=1
         ))
@@ -180,7 +181,7 @@ class Tile():
         self.mirrors['right'] = newTile
         return newTile
 
-    def mirrorUp(self, d='up'):
+    def mirrorUp(self):
         mirrorYPosition = self.rec.top
         mirrorFriend = self.friend.horizontalMirror(mirrorYPosition)
         mirrorFoe = self.foe.horizontalMirror(mirrorYPosition)
@@ -191,6 +192,18 @@ class Tile():
         self.mirrors['up'] = newTile
         return newTile
     
+    def mirrorDown(self):
+        mirrorYPosition = self.rec.bottom
+        mirrorFriend = self.friend.horizontalMirror(mirrorYPosition)
+        mirrorFoe = self.foe.horizontalMirror(mirrorYPosition)
+        mirrorOrigin = self.rec.points['topLeft']\
+                            .horizontalMirror(mirrorYPosition)
+        d = self.dim
+
+        newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
+        self.mirrors['down'] = newTile
+        return newTile
+
     def mirrorLeft(self):
         mirrorXPosition = self.rec.left
         mirrorFriend = self.friend.verticalMirror(mirrorXPosition)
@@ -203,10 +216,12 @@ class Tile():
         self.mirrors['right'] = newTile
         return newTile
 
-    def addTileToAx(self, ax):
-        self.friend.addPointToAx(ax, 'blue')
+    def addTileToAx(self, ax, isOrign=False):
+        friendColor = 'black' if isOrign else 'blue'
+        recColor = 'black' if isOrign else 'pink'
+        self.friend.addPointToAx(ax, friendColor)
         self.foe.addPointToAx(ax, 'red')
-        self.rec.addRecToAx(ax)
+        self.rec.addRecToAx(ax,recColor)
         return
 
 
@@ -231,10 +246,25 @@ class Grid():
                 grid[i][numOfTilesHorizon+j] = grid[i][numOfTilesHorizon+j-1].mirrorRight()
                 grid[i][numOfTilesHorizon-j-1] = grid[i][numOfTilesHorizon-j].mirrorLeft()
         
-        for f in grid:
-            print(f)
+        lower = [
+            [None for _ in range(2*numOfTilesHorizon)] 
+            for _ in range(numOfTilesVert) 
+        ]
+
+        lower[0][numOfTilesHorizon] = grid[0][numOfTilesHorizon].mirrorDown()
+
+        for i in range(numOfTilesVert):
+            if i>0 :
+                lower[i][numOfTilesHorizon] = lower[i-1][numOfTilesHorizon].mirrorDown()
+            lower[i][numOfTilesHorizon-1] = lower[i][numOfTilesHorizon].mirrorLeft()
+            for j in range(1,numOfTilesHorizon):
+                lower[i][numOfTilesHorizon+j] = lower[i][numOfTilesHorizon+j-1].mirrorRight()
+                lower[i][numOfTilesHorizon-j-1] = lower[i][numOfTilesHorizon-j].mirrorLeft()
+        
+        grid = grid+list(reversed(lower))
+
         self.matrix = grid
-        # origTile.mirrorLeft()
+
         # get all foes on the board
         targetList = [] 
         for f in grid:
@@ -262,6 +292,8 @@ class Grid():
         for l in grid:
             for t in l:
                 t.addTileToAx(ax)
+        origTile.addTileToAx(ax, isOrign=True)
+        
         return
 
 
