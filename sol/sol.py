@@ -75,17 +75,23 @@ class Point():
         mirror_y = self.y - (2 * distToMir)
         return Point(mirror_x, mirror_y) 
 
+    def distFromPoint(self, other):
+        dx = (self.x - other.x)**2
+        dy = (self.y - other.y)**2
+        return math.sqrt(dx+dy)
+
     @classmethod
     def pointFromPolar(cls, r, theta):
         x = r * math.sin(theta)
         y = r * math.cos(theta)
         return cls(x,y)
 
-p = Point(2,3)
-p0 = Point(0,0)
-o0 = Point(0,0)
-print p == p0
-print p0 == o0
+# p = Point(2,3)
+# p0 = Point(0,0)
+# o0 = Point(0,0)
+# print p == p0
+# print p0 == o0
+# print p.distFromPoint(o0) 
 # print p.verticalMirror(3)
 # print p.horizontalMirror(2)
 
