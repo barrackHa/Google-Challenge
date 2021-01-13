@@ -304,8 +304,6 @@ class Grid():
 
         targetsInRange = sorted(targetsInRange, key = lambda t: t[1])
         friendsInRange = sorted(friendsInRange, key = lambda t: t[1])
-        # for t in targetsInRange:
-        #    print(t[0], t[1])
         
         self.targetsInRange = targetsInRange
         self.friendsInRange = friendsInRange
@@ -386,8 +384,8 @@ class Grid():
             for t in l:
                 a = t.friend.distFromPoint(origMe)
                 b = t.foe.distFromPoint(origMe)
-                #if a <= r or b <= r: 
-                t.addTileToAx(ax)
+                if a <= r or b <= r: 
+                    t.addTileToAx(ax)
 
         #mark the original Tile and shoot
         origTile.addTileToAx(ax, isOrign=True)
@@ -405,15 +403,10 @@ class Grid():
         clearShots = self.clearShots
         for t in clearShots:
             origMe.addLineBetween2PointsToAx(ax, t[0])
-        # origMe.addLineBetween2PointsToAx(ax, self.targetsInRange[-1][0])
 
         #display plot
         plt.show()
         return
-
-
-#create simple line plot
-# ax.plot([0, 10],[0, 10])
 
 t = Tile([3, 2],[0,0],[1, 1],[2, 1])
 g = Grid(t, 4)
@@ -422,34 +415,11 @@ print(g.numOfClearShots)
 
 t1 = Tile([3,2], [0,0], [1,1], [2,1])
 g1 = Grid(t1, 4)
-print('{} = 7'.format(g.numOfClearShots))
+print('{} = 7'.format(g1.numOfClearShots))
 # g1.drawGrid()
 
 t2 = Tile([300,275], [0,0], [150,150], [185,100])
 g2 = Grid(t2, 500)
-print('{} = 9'.format(g.numOfClearShots))
+print('{} = 9'.format(g2.numOfClearShots))
 g2.drawGrid()
 # t1 = Tile([4, 4],[0,0],[1, 1],[2, 2])
-
-# g1 = Grid(t1, 10)
-# r = MyRectangle(Point(-1,-1), [2,4+2])
-# r.addRecToAx(ax)
-# p1 = Point(1,1)
-# p0 = Point(0,0)
-# p3 = Point(3,3)
-# print(r.isPointInside(p0), r.isPointInside(p1), r.isPointInside(p3))
-# t = Tile([3, 2],[0,0],[1, 1],[2, 1])
-# t.addTileToAx(ax)
-
-#add rectangle to plot
-# ax.add_patch(Rectangle((1, 1), 2, 6,
-#              edgecolor = 'pink',
-#              facecolor = 'blue',
-#              fill=False,
-#              lw=1))
-
-# p = Point(2,3)
-# p0 = Point(0,0)
-# p.addPointToAx(ax)
-# p0.addPointToAx(ax)
-#ax.scatter(1, 1, s=30, facecolor='black')
