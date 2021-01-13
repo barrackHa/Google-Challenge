@@ -62,6 +62,35 @@ class Point():
         dy = (self.y - other.y)**2
         return math.sqrt(dx+dy)
 
+    def isInlineOfFire(self, shooter, target):
+        """
+            shooter - Is a point from which a shot is fired.
+            target - Is the point to which shooter is shooting.
+            shooter and target define a segment in 2D space.
+            Return True iff self is strictly (as adistinct point) 
+            on that segment, I.E. blocking the shot. 
+        """
+        if self == shooter or self == target or target == shooter:
+            raise Exception(
+                'Must provide 3 distinct points to check line of fire'
+            )
+
+        tmpLeft = (shooter.y - self.y)*(target.x - self.x)
+        tmpRight = (target.y - self.y)*(shooter.x - self.x)
+
+        if tmpLeft == tmpRight:
+            min_x = min(target.x, shooter.x)
+            max_x = max(target.x, shooter.x)
+            min_y = min(target.y, shooter.y)
+            max_y = max(target.y, shooter.y)
+            x_condition = min_x < self.x < max_x
+            y_condition = min_y < self.y < max_y
+            if x_condition and y_condition:
+                return True
+        return False
+
+
+
     def addPointToAx(self, ax, color):
         x,y = tuple(self)    
         ax.scatter(x, y, s=10, facecolor=color)
@@ -228,33 +257,61 @@ class Grid():
     def __init__(self, origTile, distance):
         self.originTile = origTile
         self.effectiveRange = distance
+        origMe = origTile.friend
         
         self.matrix = grid = self.__gridInit__()
         
         # get all foes on the board
         targetList = [] 
-        for f in grid:
+        friendsList = []
+        for l in grid:
             # print(f)
-            targetList += map(lambda t: t.foe, f)
+            targetList += map(lambda t: t.foe, l)
+            friendsList += map(lambda t: t.friend, l)
 
         #remove duplicates 
+        friendsList.remove(origMe)
         targetList = list(set(targetList))
+        friendsList = list(set(friendsList))
         self.foes = tuple(targetList)
-
+        self.friends = tuple(friendsList)
+        
         #find ranges to target
         targetsInRange = map(
             lambda p: (p, origMe.distFromPoint(p)), 
             targetList
         )
+
+        friendsInRange = map(
+            lambda p: (p, origMe.distFromPoint(p)), 
+            friendsList
+        )
+
         #Remove out of range targets
         targetsInRange = filter(
-            lambda p,d: d <= distance,
+            lambda t : t[1] <= distance,
             targetsInRange
         )
-        #list(targetsInRange).sort(key = lambda t: t[1])
-        # list(sorted(targetsInRange, key = lambda t: t[1]))
-        #print(type(targetsInRange))
-        #self.targetsInRange = list(sorted(targetsInRange, key = lambda t: t[1]))
+        
+        friendsInRange = filter(
+            lambda t : t[1] <= distance,
+            friendsInRange
+        )
+
+        targetsInRange = sorted(targetsInRange, key = lambda t: t[1])
+        friendsInRange = sorted(friendsInRange, key = lambda t: t[1])
+        # for t in targetsInRange:
+        #    print(t[0], t[1])
+        
+        self.targetsInRange = targetsInRange
+        self.friendsInRange = friendsInRange
+
+        clearShoots = []
+        # Run through possible targets in range
+        for t in targetsInRange:
+            #Check if there's something blocking the shot
+            for p in targetsInRange+friendsInRange:
+
         
         return
 
@@ -337,10 +394,10 @@ class Grid():
 
 t = Tile([3, 2],[0,0],[1, 1],[2, 1])
 g = Grid(t, 4)
-g.drawGrid()
-t1 = Tile([4, 4],[0,0],[1, 1],[2, 2])
+# g.drawGrid()
+# t1 = Tile([4, 4],[0,0],[1, 1],[2, 2])
 
-g1 = Grid(t1, 10)
+# g1 = Grid(t1, 10)
 # r = MyRectangle(Point(-1,-1), [2,4+2])
 # r.addRecToAx(ax)
 # p1 = Point(1,1)
