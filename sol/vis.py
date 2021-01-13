@@ -228,6 +228,39 @@ class Grid():
     def __init__(self, origTile, distance):
         self.originTile = origTile
         self.effectiveRange = distance
+        
+        self.matrix = grid = self.__gridInit__()
+        
+        # get all foes on the board
+        targetList = [] 
+        for f in grid:
+            # print(f)
+            targetList += map(lambda t: t.foe, f)
+
+        #remove duplicates 
+        targetList = list(set(targetList))
+        self.foes = tuple(targetList)
+
+        #find ranges to target
+        targetsInRange = map(
+            lambda p: (p, origMe.distFromPoint(p)), 
+            targetList
+        )
+        #Remove out of range targets
+        targetsInRange = filter(
+            lambda p,d: d <= distance,
+            targetsInRange
+        )
+        #list(targetsInRange).sort(key = lambda t: t[1])
+        # list(sorted(targetsInRange, key = lambda t: t[1]))
+        #print(type(targetsInRange))
+        #self.targetsInRange = list(sorted(targetsInRange, key = lambda t: t[1]))
+        
+        return
+
+    def __gridInit__(self):
+        origTile = self.originTile
+        distance = self.effectiveRange
         dx, dy = origTile.dim
         x,y = tuple(origTile.friend)
         numOfTilesHorizon = int(math.ceil(float(distance+x)/dx))
@@ -264,35 +297,8 @@ class Grid():
                 lower[i][numOfTilesHorizon-j-1] = lower[i][numOfTilesHorizon-j].mirrorLeft()
         
         grid = grid+list(reversed(lower))
+        return grid
 
-        self.matrix = grid
-
-        # get all foes on the board
-        targetList = [] 
-        for f in grid:
-            # print(f)
-            targetList += map(lambda t: t.foe, f)
-
-        #remove duplicates 
-        targetList = list(set(targetList))
-        self.foes = tuple(targetList)
-
-        #find ranges to target
-        targetsInRange = map(
-            lambda p: (p, origMe.distFromPoint(p)), 
-            targetList
-        )
-        #Remove out of range targets
-        targetsInRange = filter(
-            lambda p,d: d <= distance,
-            targetsInRange
-        )
-        #list(targetsInRange).sort(key = lambda t: t[1])
-        # list(sorted(targetsInRange, key = lambda t: t[1]))
-        #print(type(targetsInRange))
-        #self.targetsInRange = list(sorted(targetsInRange, key = lambda t: t[1]))
-        
-        return
 
     def drawGrid(self):
         #define Matplotlib figure and axis
@@ -309,7 +315,7 @@ class Grid():
                 b = t.foe.distFromPoint(origMe)
                 if a <= r or b <= r: 
                     t.addTileToAx(ax)
-                    
+
         #mark the original Tile and shoot
         origTile.addTileToAx(ax, isOrign=True)
         
