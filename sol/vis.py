@@ -89,12 +89,16 @@ class Point():
                 return True
         return False
 
-
-
     def addPointToAx(self, ax, color):
         x,y = tuple(self)    
         ax.scatter(x, y, s=10, facecolor=color)
         return
+
+    def addLineBetween2PointsToAx(self, ax, p):
+        """add simple line plot to ax"""
+        ax.plot((self.x, p.x), (self.y, p.y), 'k:',lw=1)
+        return
+
 
 class MyRectangle():
     def __init__(self, origPoint, dimensions):
@@ -311,7 +315,7 @@ class Grid():
         for t in targetsInRange:
             #Check if there's something blocking the shot
             for p in targetsInRange+friendsInRange:
-
+                pass
         
         return
 
@@ -383,6 +387,8 @@ class Grid():
             fill=False,
             lw=1 
         ))
+        
+        origMe.addLineBetween2PointsToAx(ax, self.targetsInRange[-1][0])
 
         #display plot
         plt.show()
@@ -394,7 +400,7 @@ class Grid():
 
 t = Tile([3, 2],[0,0],[1, 1],[2, 1])
 g = Grid(t, 4)
-# g.drawGrid()
+g.drawGrid()
 # t1 = Tile([4, 4],[0,0],[1, 1],[2, 2])
 
 # g1 = Grid(t1, 10)
