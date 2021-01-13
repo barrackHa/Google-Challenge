@@ -1,7 +1,4 @@
-import matplotlib.pyplot as plt
 import math
-from matplotlib.patches import Rectangle, Circle
-
 
 class Point():
     def __init__(self, x, y):
@@ -89,17 +86,6 @@ class Point():
                 return True
         return False
 
-    def addPointToAx(self, ax, color):
-        x,y = tuple(self)    
-        ax.scatter(x, y, s=10, facecolor=color)
-        return
-
-    def addLineBetween2PointsToAx(self, ax, p):
-        """add simple line plot to ax"""
-        ax.plot((self.x, p.x), (self.y, p.y), 'k:',lw=1)
-        return
-
-
 class MyRectangle():
     def __init__(self, origPoint, dimensions):
         self.points = {
@@ -159,18 +145,6 @@ class MyRectangle():
         B = self.bottom <= y <= self.top
         return (A and B)
     
-    def addRecToAx(self, ax, color='pink'):
-        orignPoint = tuple(self.points['bottomLeft'])
-        w = self.length
-        h = self.hight
-        ax.add_patch(Rectangle(
-            orignPoint, w, h,
-             edgecolor = color,
-             fill=False,
-             lw=1
-        ))
-        return
-
 class Tile():
     """A 2 by 2 slice of R^2 with info about friend / foe"""
     def __init__(self, dimensions, origin, friend, foe):
@@ -247,15 +221,6 @@ class Tile():
         newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
         self.mirrors['right'] = newTile
         return newTile
-
-    def addTileToAx(self, ax, isOrign=False):
-        friendColor = 'black' if isOrign else 'blue'
-        recColor = 'black' if isOrign else 'pink'
-        self.friend.addPointToAx(ax, friendColor)
-        self.foe.addPointToAx(ax, 'red')
-        self.rec.addRecToAx(ax,recColor)
-        return
-
 
 class Grid():
     def __init__(self, origTile, distance):
@@ -370,56 +335,13 @@ class Grid():
         grid = grid+list(reversed(lower))
         return grid
 
+def solution(dimensions, your_position, guard_position, distance):
+    orignTile = Tile(dimensions, [0,0], your_position, guard_position) 
+    g = Grid(orignTile, distance)
+    return g.numOfClearShots
 
-    def drawGrid(self):
-        #define Matplotlib figure and axis
-        fig, ax = plt.subplots()
-        grid = self.matrix
-        origTile = self.originTile 
-        origMe = self.originTile.friend
-        r = self.effectiveRange
+s = solution([3,2], [1,1], [2,1], 4)
+print('{} = 7'.format(s))
 
-        # draw all tiles in the gride if they have a F/F point in effective range
-        for l in grid:
-            for t in l:
-                a = t.friend.distFromPoint(origMe)
-                b = t.foe.distFromPoint(origMe)
-                if a <= r or b <= r: 
-                    t.addTileToAx(ax)
-
-        #mark the original Tile and shoot
-        origTile.addTileToAx(ax, isOrign=True)
-        
-        # Draw circle in the radius of the shot's effective range
-        ax.add_patch(Circle(
-            tuple(origMe),
-            r,
-            edgecolor = 'green',
-            fill=False,
-            lw=1 
-        ))
-        
-        # Draw clear shots:
-        clearShots = self.clearShots
-        for t in clearShots:
-            origMe.addLineBetween2PointsToAx(ax, t[0])
-
-        #display plot
-        plt.show()
-        return
-
-t = Tile([3, 2],[0,0],[1, 1],[2, 1])
-g = Grid(t, 4)
-print(g.numOfClearShots)
-# g.drawGrid()
-
-t1 = Tile([3,2], [0,0], [1,1], [2,1])
-g1 = Grid(t1, 4)
-print('{} = 7'.format(g1.numOfClearShots))
-# g1.drawGrid()
-
-t2 = Tile([300,275], [0,0], [150,150], [185,100])
-g2 = Grid(t2, 500)
-print('{} = 9'.format(g2.numOfClearShots))
-g2.drawGrid()
-# t1 = Tile([4, 4],[0,0],[1, 1],[2, 2])
+s = solution([300,275], [150,150], [185,100], 500)
+print('{} = 9'.format(s))
