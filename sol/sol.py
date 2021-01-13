@@ -1,20 +1,12 @@
+import matplotlib.pyplot as plt
 import math
+from matplotlib.patches import Rectangle, Circle
 
-def printRoom(dimensions, your_position, guard_position):
-    room = list(reversed(
-        [[0 for _ in range(dimensions[0])] for _ in range(dimensions[1])]
-    ))
-    room[your_position[1]][your_position[0]] = 1
-    room[guard_position[1]][guard_position[0]] = 2
-    for l in room:
-        print l
 
 class Point():
     def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.r = math.sqrt(x*x + y*y) 
-        self.theta = math.atan(float(self.y)/self.x) if x != 0 else math.pi/2
+        self._x = x
+        self._y = y
         return
 
     def __getitem__(self,i):
@@ -38,27 +30,13 @@ class Point():
     @property
     def x(self):
         """Return the x coordinate (vertical)"""
-        return self.x
+        return self._x
 
     @property
     def y(self):
         """Return the y coordinate (horizontal)"""
-        return self.y
+        return self._y
     
-    @property
-    def polarCoordinates(self):
-        return self.r, self.theta
-
-    @property 
-    def moveByPoint(self):
-        """
-            returns a function f.
-            f: R^2 -> R^2 f "moves" the plane by how much 
-            it would take to move the point "self" to (0,0). 
-            f(x,y) = (x-self.x, y-self.y)
-        """
-        return lambda x,y: x-self.x, y-self.y
-
     def verticalMirror(self, mirror):
         """
             Returns a new Point which is result of mirroring
@@ -84,84 +62,45 @@ class Point():
         dy = (self.y - other.y)**2
         return math.sqrt(dx+dy)
 
-    @classmethod
-    def pointFromPolar(cls, r, theta):
-        x = r * math.sin(theta)
-        y = r * math.cos(theta)
-        return cls(x,y)
+    def isInlineOfFire(self, shooter, target):
+        """
+            shooter - Is a point from which a shot is fired.
+            target - Is the point to which shooter is shooting.
+            shooter and target define a segment in 2D space.
+            Return True iff self is strictly (as adistinct point) 
+            on that segment, I.E. blocking the shot. 
+        """
+        if self == shooter or self == target or target == shooter:
+            raise Exception(
+                'Must provide 3 distinct points to check line of fire'
+            )
 
-# p = Point(2,3)
-# p0 = Point(0,0)
-# o0 = Point(0,0)
-# print p == p0
-# print p0 == o0
-# print p.distFromPoint(o0) 
-# print p.verticalMirror(3)
-# print p.horizontalMirror(2)
+        tmpLeft = (shooter.y - self.y)*(target.x - self.x)
+        tmpRight = (target.y - self.y)*(shooter.x - self.x)
 
-class LineEquation():
-    def __init__(self, s, b):
-        # of the form y = sx + b
-        self.slope = s
-        self.b = b
-        self.y = lambda x: s*x + b
-        self.r = lambda theta: b / (math.sin(theta) - s*math.cos(theta))
+        if tmpLeft == tmpRight:
+            min_x = min(target.x, shooter.x)
+            max_x = max(target.x, shooter.x)
+            min_y = min(target.y, shooter.y)
+            max_y = max(target.y, shooter.y)
+            x_condition = min_x <= self.x <= max_x
+            y_condition = min_y <= self.y <= max_y
+            if x_condition and y_condition:
+                return True
+        return False
+
+    def addPointToAx(self, ax, color):
+        x,y = tuple(self)    
+        ax.scatter(x, y, s=10, facecolor=color)
         return
 
-    def __call__(self, x, polar = False):
-        return self.r(x) if polar else self.y(x)
-    
-    def __str__(self):        
-        return 'y = {}*x + {}'.format(self.slope,self.b)
+    def addLineBetween2PointsToAx(self, ax, p):
+        """add simple line plot to ax"""
+        ax.plot((self.x, p.x), (self.y, p.y), 'k:',lw=1)
+        return
 
-    def __eq__(self, other):
-        slopesEq = self.slope == other.slope
-        bEq = self.b == other.b 
-        return slopesEq and bEq 
 
-    @property
-    def polar(self):
-        m, b = self.slope, self.b
-        return '{} / (math.sin(theta) - {}*math.cos(theta))'.format(b,m)
-
-    def isPointOnLine(self, point): 
-        return point[1] == self.y(point[0])
-
-    @classmethod
-    def lineBetween2Points(cls,p1,p2):
-        # y - y1 = m(x - x1)
-        # b = y1 - m*x1
-        slope = float(p2[1]-p1[1]) / float(p2[0]-p1[0])
-        b =  p1[1] - (slope * p1[0]) 
-        return cls(slope, b)
-
-    @classmethod
-    def lineFromslopeAndPoint(cls,p,m):
-        # y - y1 = m(x - x1)
-        # b = y1 - m*x1
-        b =  p1[1] - (m * p1[0]) 
-        return cls(m, b)
-
-# l1 = LineEquation(1,0)
-# print l1
-# p1 = Point(0,0)
-# p2 = Point(1,1)
-# l2 = LineEquation.lineBetween2Points(p1,p2)
-# print l2
-# print l1 == l2 
-# print l1.isPointOnLine(Point(2,2))
-# print l2.isPointOnLine(Point(2,2))
-# l3 = LineEquation.lineBetween2Points(Point(3,7),Point(5,11))
-# print l3
-# l4 = LineEquation.lineBetween2Points(Point(2,3),Point(6,-5)) 
-# print l4
-# l7 = LineEquation.lineBetween2Points(Point(-3,4),Point(5, -2))
-# print l7
-# print l3.polar
-# l4.polar
-# l7.polar
-
-class Rectangle():
+class MyRectangle():
     def __init__(self, origPoint, dimensions):
         self.points = {
             'topRight': Point(
@@ -219,53 +158,18 @@ class Rectangle():
         A = self.left <= x <= self.right
         B = self.bottom <= y <= self.top
         return (A and B)
-
-
-    def mirrorFactory(self, direction):
-        """
-            Return a Rectangle instance with same dimensions.
-            starting form the end of this rectangle, and is the mirror 
-            of this one. 
-            Keep a pointer for ref.
-        """
-        directions = {
-            'east': 'bottomRight',
-            'west': 'bottomLeft',
-            'north': 'topLeft',
-            'south': None
-        }
-
-        d = direction.lower()
-        if d not in directions:
-            msg = 'Mirror only takes {} as valid directions.\n'\
-                .format(directions.keys())
-            msg += 'Cannot mirror in direction {}!!!'\
-                .format(d)
-            raise Exception(msg)
-
-        new_dim = (self.length, self.hight)
-        if d == 'south':
-            new_x = self.points['bottomLeft'][0]
-            new_y = self.points['bottomLeft'][0] - self.hight
-            new_orig = Point(new_x, new_y)
-        else:
-            new_orig = self.points[directions[d]]
-        
-        new_rec = Rectangle(new_orig, new_dim)
-        self.mirrors[d] = new_rec
-        return new_rec
-        
-
-# r = Rectangle(Point(0,0), [2,2])
-# p1 = Point(1,1)
-# p0 = Point(0,0)
-# p3 = Point(3,3)
-# print r.isPointInside(p0), r.isPointInside(p1), r.isPointInside(p3)
-#print r.mirrorRight()
-# print 'east: ', r.mirrorFactory('east')
-# print '\nwest: ' , r.mirrorFactory('west')
-# print '\nnorth', r.mirrorFactory('north')
-# print '\nsouth', r.mirrorFactory('south')
+    
+    def addRecToAx(self, ax, color='pink'):
+        orignPoint = tuple(self.points['bottomLeft'])
+        w = self.length
+        h = self.hight
+        ax.add_patch(Rectangle(
+            orignPoint, w, h,
+             edgecolor = color,
+             fill=False,
+             lw=1
+        ))
+        return
 
 class Tile():
     """A 2 by 2 slice of R^2 with info about friend / foe"""
@@ -283,7 +187,7 @@ class Tile():
             ^ begins here
         """
         self.origin = Point(origin[0], origin[1])
-        self.rec = Rectangle(self.origin, dimensions)
+        self.rec = MyRectangle(self.origin, dimensions)
 
         friend = Point(friend[0], friend[1])
         foe = Point(foe[0], foe[1])
@@ -298,20 +202,10 @@ class Tile():
         self.mirrors = {}
         return
         
-    def mirrorFactory(self, d='right'):
-        directions = {'left': None, 'right': None, 'up': None}
-        
+    def mirrorRight(self):
         mirrorXPosition = self.rec.right
         mirrorFriend = self.friend.verticalMirror(mirrorXPosition)
         mirrorFoe = self.foe.verticalMirror(mirrorXPosition)
-        # print "{} -> {}, {} -> {} by mirror x = {}".\
-        #     format(
-        #         self.friend, 
-        #         mirrorFriend, 
-        #         self.foe,
-        #         mirrorFoe,
-        #         mirrorXPosition
-        #     )
         mirrorOrigin = self.rec.points['bottomRight']
         d = self.dim
 
@@ -319,19 +213,10 @@ class Tile():
         self.mirrors['right'] = newTile
         return newTile
 
-    def mirrorUp(self, d='up'):
-        
+    def mirrorUp(self):
         mirrorYPosition = self.rec.top
         mirrorFriend = self.friend.horizontalMirror(mirrorYPosition)
         mirrorFoe = self.foe.horizontalMirror(mirrorYPosition)
-        # print "{} -> {}, {} -> {} by mirror x = {}".\
-        #     format(
-        #         self.friend, 
-        #         mirrorFriend, 
-        #         self.foe,
-        #         mirrorFoe,
-        #         mirrorXPosition
-        #     )
         mirrorOrigin = self.rec.points['topLeft']
         d = self.dim
 
@@ -339,50 +224,202 @@ class Tile():
         self.mirrors['up'] = newTile
         return newTile
     
+    def mirrorDown(self):
+        mirrorYPosition = self.rec.bottom
+        mirrorFriend = self.friend.horizontalMirror(mirrorYPosition)
+        mirrorFoe = self.foe.horizontalMirror(mirrorYPosition)
+        mirrorOrigin = self.rec.points['topLeft']\
+                            .horizontalMirror(mirrorYPosition)
+        d = self.dim
 
-# t = Tile([3, 2],[0,0],[1, 1],[2, 1])
-# tErr = Tile([3, 2],[0,0],[1, 9],[2, 1])
-#print t.mirrorFactory('right').friend
+        newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
+        self.mirrors['down'] = newTile
+        return newTile
+
+    def mirrorLeft(self):
+        mirrorXPosition = self.rec.left
+        mirrorFriend = self.friend.verticalMirror(mirrorXPosition)
+        mirrorFoe = self.foe.verticalMirror(mirrorXPosition)
+        mirrorOrigin = self.rec.points['bottomRight']\
+                            .verticalMirror(mirrorXPosition)
+        d = self.dim
+
+        newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
+        self.mirrors['right'] = newTile
+        return newTile
+
+    def addTileToAx(self, ax, isOrign=False):
+        friendColor = 'black' if isOrign else 'blue'
+        recColor = 'black' if isOrign else 'pink'
+        self.friend.addPointToAx(ax, friendColor)
+        self.foe.addPointToAx(ax, 'red')
+        self.rec.addRecToAx(ax,recColor)
+        return
+
 
 class Grid():
     def __init__(self, origTile, distance):
+        self.originTile = origTile
+        self.effectiveRange = distance
+        origMe = origTile.friend
+        
+        self.matrix = grid = self.__gridInit__()
+        
+        # get all foes on the board
+        targetList = [] 
+        friendsList = []
+        for l in grid:
+            # print(f)
+            targetList += map(lambda t: t.foe, l)
+            friendsList += map(lambda t: t.friend, l)
+
+        #remove duplicates 
+        friendsList.remove(origMe)
+        targetList = list(set(targetList))
+        friendsList = list(set(friendsList))
+        self.foes = tuple(targetList)
+        self.friends = tuple(friendsList)
+        
+        #find ranges to target
+        targetsInRange = map(
+            lambda p: (p, origMe.distFromPoint(p)), 
+            targetList
+        )
+
+        friendsInRange = map(
+            lambda p: (p, origMe.distFromPoint(p)), 
+            friendsList
+        )
+
+        #Remove out of range targets
+        targetsInRange = filter(
+            lambda t : t[1] <= distance,
+            targetsInRange
+        )
+        
+        friendsInRange = filter(
+            lambda t : t[1] <= distance,
+            friendsInRange
+        )
+
+        targetsInRange = sorted(targetsInRange, key = lambda t: t[1])
+        friendsInRange = sorted(friendsInRange, key = lambda t: t[1])
+        
+        self.targetsInRange = targetsInRange
+        self.friendsInRange = friendsInRange
+
+        clearShots = []
+        # Run through possible targets in range
+        for target in targetsInRange:
+            #Check if there's something blocking the shot
+            clearShot = True
+            lst = targetsInRange+friendsInRange
+            lst.remove(target)
+            for p in lst:
+                isInline = p[0].isInlineOfFire(origMe, target[0])
+                if isInline:
+                    clearShot = False
+                    
+            if clearShot:
+                clearShots.append(target)
+
+        self.clearShots = clearShots        
+        return
+
+    @property
+    def numOfClearShots(self):
+        return len(self.clearShots)
+
+    def __gridInit__(self):
+        origTile = self.originTile
+        distance = self.effectiveRange
         dx, dy = origTile.dim
-        numOfTilesHorizon = int(math.ceil(float(distance)/dx))
-        numOfTilesVert = int(math.ceil(float(distance)/dx))
-        print numOfTilesHorizon, numOfTilesVert
+        x,y = tuple(origTile.friend)
+        numOfTilesHorizon = int(math.ceil(float(distance+x)/dx))
+        numOfTilesVert = int(math.ceil(float(distance+y)/dy))
         grid = [
-            [None for _ in range(numOfTilesHorizon)] 
+            [None for _ in range(2*numOfTilesHorizon)] 
             for _ in range(numOfTilesVert) 
         ]
         origMe = origTile.friend
-        grid[0][0] = origTile
+        grid[0][numOfTilesHorizon] = origTile
 
         for i in range(numOfTilesVert):
             if i>0 :
-                grid[i][0] = grid[i-1][0].mirrorUp()
+                grid[i][numOfTilesHorizon] = grid[i-1][numOfTilesHorizon].mirrorUp()
+            grid[i][numOfTilesHorizon-1] = grid[i][numOfTilesHorizon].mirrorLeft()
             for j in range(1,numOfTilesHorizon):
-                grid[i][j] = grid[i][j-1].mirrorFactory()
+                grid[i][numOfTilesHorizon+j] = grid[i][numOfTilesHorizon+j-1].mirrorRight()
+                grid[i][numOfTilesHorizon-j-1] = grid[i][numOfTilesHorizon-j].mirrorLeft()
         
-        targetList = [] 
-        # print grid
+        lower = [
+            [None for _ in range(2*numOfTilesHorizon)] 
+            for _ in range(numOfTilesVert) 
+        ]
+
+        lower[0][numOfTilesHorizon] = grid[0][numOfTilesHorizon].mirrorDown()
+
+        for i in range(numOfTilesVert):
+            if i>0 :
+                lower[i][numOfTilesHorizon] = lower[i-1][numOfTilesHorizon].mirrorDown()
+            lower[i][numOfTilesHorizon-1] = lower[i][numOfTilesHorizon].mirrorLeft()
+            for j in range(1,numOfTilesHorizon):
+                lower[i][numOfTilesHorizon+j] = lower[i][numOfTilesHorizon+j-1].mirrorRight()
+                lower[i][numOfTilesHorizon-j-1] = lower[i][numOfTilesHorizon-j].mirrorLeft()
+        
+        grid = grid+list(reversed(lower))
+        return grid
 
 
+    def drawGrid(self):
+        #define Matplotlib figure and axis
+        fig, ax = plt.subplots()
+        grid = self.matrix
+        origTile = self.originTile 
+        origMe = self.originTile.friend
+        r = self.effectiveRange
+
+        # draw all tiles in the gride if they have a F/F point in effective range
+        for l in grid:
+            for t in l:
+                a = t.friend.distFromPoint(origMe)
+                b = t.foe.distFromPoint(origMe)
+                if a <= r or b <= r: 
+                    t.addTileToAx(ax)
+
+        #mark the original Tile and shoot
+        origTile.addTileToAx(ax, isOrign=True)
+        
+        # Draw circle in the radius of the shot's effective range
+        ax.add_patch(Circle(
+            tuple(origMe),
+            r,
+            edgecolor = 'green',
+            fill=False,
+            lw=1 
+        ))
+        
+        # Draw clear shots:
+        clearShots = self.clearShots
+        for t in clearShots:
+            origMe.addLineBetween2PointsToAx(ax, t[0])
+
+        #display plot
+        plt.show()
+        return
 
 t = Tile([3, 2],[0,0],[1, 1],[2, 1])
 g = Grid(t, 4)
+print(g.numOfClearShots)
+# g.drawGrid()
 
-p = Point(2,3)
-p0 = Point(0,0)
-o0 = Point(0,0)
-# lst = [tuple(p),tuple(p0),tuple(o0)]
-s = set([p,p0,o0])
-for p in s:
-    print p
+t1 = Tile([3,2], [0,0], [1,1], [2,1])
+g1 = Grid(t1, 4)
+print('{} = 7'.format(g1.numOfClearShots))
+# g1.drawGrid()
 
-def solution(dimensions, your_position, guard_position, distance):
-    x1, y1 = your_position
-    x2, y2 = guard_position
-    return [x2-x1, y2-y1]
-
-#print solution([3, 2],[1, 1],[2, 1],4)
-#printRoom([3, 2],[1, 1],[2, 1])
+t2 = Tile([300,275], [0,0], [150,150], [185,100])
+g2 = Grid(t2, 500)
+print('{} = 9'.format(g2.numOfClearShots))
+g2.drawGrid()
+# t1 = Tile([4, 4],[0,0],[1, 1],[2, 2])
