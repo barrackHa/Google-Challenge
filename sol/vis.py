@@ -265,7 +265,6 @@ class Grid():
         x,y = tuple(origTile.friend)
         numOfTilesHorizon = int(math.ceil(float(distance+x)/dx))
         numOfTilesVert = int(math.ceil(float(distance+y)/dy))
-        #print(numOfTilesHorizon, numOfTilesVert)
         grid = [
             [None for _ in range(2*numOfTilesHorizon)] 
             for _ in range(numOfTilesVert) 
@@ -330,7 +329,6 @@ class Grid():
 
         #display plot
         plt.show()
-    
         return
 
 
