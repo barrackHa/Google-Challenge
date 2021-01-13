@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import math
 from matplotlib.patches import Rectangle, Circle
-# matplotlib.patches.Circle((x, y), r=5, **kwargs)
 
 
 class Point():
@@ -226,11 +225,12 @@ class Tile():
 
 
 class Grid():
-    def __init__(self, origTile, distance, ax):
+    def __init__(self, origTile, distance):
         dx, dy = origTile.dim
-        numOfTilesHorizon = int(math.ceil(float(distance)/dx))
-        numOfTilesVert = int(math.ceil(float(distance)/dy))
-        # print numOfTilesHorizon, numOfTilesVert
+        x,y = tuple(origTile.friend)
+        numOfTilesHorizon = int(math.ceil(float(distance+x)/dx))
+        numOfTilesVert = int(math.ceil(float(distance+y)/dy))
+        #print(numOfTilesHorizon, numOfTilesVert)
         grid = [
             [None for _ in range(2*numOfTilesHorizon)] 
             for _ in range(numOfTilesVert) 
@@ -289,22 +289,40 @@ class Grid():
         # list(sorted(targetsInRange, key = lambda t: t[1]))
         #print(type(targetsInRange))
         #self.targetsInRange = list(sorted(targetsInRange, key = lambda t: t[1]))
+        
+        #define Matplotlib figure and axis
+        fig, ax = plt.subplots()
+
         for l in grid:
             for t in l:
-                t.addTileToAx(ax)
+                a = t.friend.distFromPoint(origMe)
+                b = t.foe.distFromPoint(origMe)
+                if a <= distance or b <= distance: 
+                    t.addTileToAx(ax)
         origTile.addTileToAx(ax, isOrign=True)
         
+        ax.add_patch(Circle(
+            tuple(origMe),
+            distance,
+            edgecolor = 'green',
+            fill=False,
+            lw=1 
+        ))
+
+        #display plot
+        plt.show()
+
         return
 
-
-#define Matplotlib figure and axis
-fig, ax = plt.subplots()
 
 #create simple line plot
 # ax.plot([0, 10],[0, 10])
 
 t = Tile([3, 2],[0,0],[1, 1],[2, 1])
-g = Grid(t, 4, ax)
+g = Grid(t, 4)
+t1 = Tile([4, 4],[0,0],[1, 1],[2, 2])
+
+g1 = Grid(t1, 10)
 # r = MyRectangle(Point(-1,-1), [2,4+2])
 # r.addRecToAx(ax)
 # p1 = Point(1,1)
@@ -326,6 +344,3 @@ g = Grid(t, 4, ax)
 # p.addPointToAx(ax)
 # p0.addPointToAx(ax)
 #ax.scatter(1, 1, s=30, facecolor='black')
-
-#display plot
-plt.show()
