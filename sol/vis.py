@@ -83,8 +83,8 @@ class Point():
             max_x = max(target.x, shooter.x)
             min_y = min(target.y, shooter.y)
             max_y = max(target.y, shooter.y)
-            x_condition = min_x < self.x < max_x
-            y_condition = min_y < self.y < max_y
+            x_condition = min_x <= self.x <= max_x
+            y_condition = min_y <= self.y <= max_y
             if x_condition and y_condition:
                 return True
         return False
@@ -310,14 +310,27 @@ class Grid():
         self.targetsInRange = targetsInRange
         self.friendsInRange = friendsInRange
 
-        clearShoots = []
+        clearShots = []
         # Run through possible targets in range
-        for t in targetsInRange:
+        for target in targetsInRange:
             #Check if there's something blocking the shot
-            for p in targetsInRange+friendsInRange:
-                pass
-        
+            clearShot = True
+            lst = targetsInRange+friendsInRange
+            lst.remove(target)
+            for p in lst:
+                isInline = p[0].isInlineOfFire(origMe, target[0])
+                if isInline:
+                    clearShot = False
+                    
+            if clearShot:
+                clearShots.append(target)
+
+        self.clearShots = clearShots        
         return
+
+    @property
+    def numOfClearShots(self):
+        return len(self.clearShots)
 
     def __gridInit__(self):
         origTile = self.originTile
@@ -373,8 +386,8 @@ class Grid():
             for t in l:
                 a = t.friend.distFromPoint(origMe)
                 b = t.foe.distFromPoint(origMe)
-                if a <= r or b <= r: 
-                    t.addTileToAx(ax)
+                #if a <= r or b <= r: 
+                t.addTileToAx(ax)
 
         #mark the original Tile and shoot
         origTile.addTileToAx(ax, isOrign=True)
@@ -388,7 +401,11 @@ class Grid():
             lw=1 
         ))
         
-        origMe.addLineBetween2PointsToAx(ax, self.targetsInRange[-1][0])
+        # Draw clear shots:
+        clearShots = self.clearShots
+        for t in clearShots:
+            origMe.addLineBetween2PointsToAx(ax, t[0])
+        # origMe.addLineBetween2PointsToAx(ax, self.targetsInRange[-1][0])
 
         #display plot
         plt.show()
@@ -400,7 +417,18 @@ class Grid():
 
 t = Tile([3, 2],[0,0],[1, 1],[2, 1])
 g = Grid(t, 4)
-g.drawGrid()
+print(g.numOfClearShots)
+# g.drawGrid()
+
+t1 = Tile([3,2], [0,0], [1,1], [2,1])
+g1 = Grid(t1, 4)
+print('{} = 7'.format(g.numOfClearShots))
+# g1.drawGrid()
+
+t2 = Tile([300,275], [0,0], [150,150], [185,100])
+g2 = Grid(t2, 500)
+print('{} = 9'.format(g.numOfClearShots))
+g2.drawGrid()
 # t1 = Tile([4, 4],[0,0],[1, 1],[2, 2])
 
 # g1 = Grid(t1, 10)
