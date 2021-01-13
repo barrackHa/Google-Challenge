@@ -226,6 +226,8 @@ class Tile():
 
 class Grid():
     def __init__(self, origTile, distance):
+        self.originTile = origTile
+        self.effectiveRange = distance
         dx, dy = origTile.dim
         x,y = tuple(origTile.friend)
         numOfTilesHorizon = int(math.ceil(float(distance+x)/dx))
@@ -290,20 +292,31 @@ class Grid():
         #print(type(targetsInRange))
         #self.targetsInRange = list(sorted(targetsInRange, key = lambda t: t[1]))
         
+        return
+
+    def drawGrid(self):
         #define Matplotlib figure and axis
         fig, ax = plt.subplots()
+        grid = self.matrix
+        origTile = self.originTile 
+        origMe = self.originTile.friend
+        r = self.effectiveRange
 
+        # draw all tiles in the gride if they have a F/F point in effective range
         for l in grid:
             for t in l:
                 a = t.friend.distFromPoint(origMe)
                 b = t.foe.distFromPoint(origMe)
-                if a <= distance or b <= distance: 
+                if a <= r or b <= r: 
                     t.addTileToAx(ax)
+                    
+        #mark the original Tile and shoot
         origTile.addTileToAx(ax, isOrign=True)
         
+        # Draw circle in the radius of the shot's effective range
         ax.add_patch(Circle(
             tuple(origMe),
-            distance,
+            r,
             edgecolor = 'green',
             fill=False,
             lw=1 
@@ -311,7 +324,7 @@ class Grid():
 
         #display plot
         plt.show()
-
+    
         return
 
 
@@ -320,6 +333,7 @@ class Grid():
 
 t = Tile([3, 2],[0,0],[1, 1],[2, 1])
 g = Grid(t, 4)
+g.drawGrid()
 t1 = Tile([4, 4],[0,0],[1, 1],[2, 2])
 
 g1 = Grid(t1, 10)
