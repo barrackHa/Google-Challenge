@@ -336,6 +336,12 @@ class Grid():
         return grid
 
 def solution(dimensions, your_position, guard_position, distance):
+    if your_position == guard_position:
+        return 0
+    me = Point(your_position[0], your_position[1])
+    target = Point(guard_position[0], guard_position[1])
+    if distance < me.distFromPoint(target):
+        return 0
     orignTile = Tile(dimensions, [0,0], your_position, guard_position) 
     g = Grid(orignTile, distance)
     return g.numOfClearShots
