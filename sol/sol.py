@@ -237,7 +237,10 @@ class Grid():
         origMe = self.originTile.friend
         targetsInRange = self.acquireTargetsInRange()
         friendsInRange = self.identifyFriendlies()
+        clearShots = self.getClearShots(origMe, targetsInRange, friendsInRange)
+        return len(clearShots)
 
+    def getClearShots(self, origMe, targetsInRange, friendsInRange):
         clearShots = []
         # Run through possible targets in range
         for target in targetsInRange:
@@ -253,11 +256,8 @@ class Grid():
             if clearShot:
                 clearShots.append(target)
 
-        self.clearShots = clearShots        
-        return len(self.clearShots)
+        return clearShots        
 
-    # def getClearShots(self, friend, foes, shotOrigin):
-        
     def acquireTargetsInRange(self):
         lst = []
         shootOrigin = self.originTile.friend
