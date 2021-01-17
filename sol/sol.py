@@ -259,10 +259,7 @@ class Grid():
         self.originTile = origTile
         self.effectiveRange = distance
         origMe = origTile.friend
-        
-        # print "grid init"
         self.matrix = grid = self.__gridInit__()
-        # print 'grid done'
         return
 
     @property
@@ -270,7 +267,6 @@ class Grid():
         origMe = self.originTile.friend
         targetsInRange = self.acquireTargetsInRange()
         friendsInRange = self.identifyFriendlies()
-        # print "getting clearShots"
         clearShots = self.getClearShots(origMe, targetsInRange, friendsInRange)
         return len(clearShots)
 
@@ -278,7 +274,6 @@ class Grid():
         clearTargets = []
         shotsDict = {-1: {}, 1: {}}
         # Run through possible targets in range
-        # print 'start looping targets'
         for target in targetsInRange:
             m = origMe.getSlope(target)
             sgn = origMe.sgn(target)
@@ -294,12 +289,6 @@ class Grid():
                 # only store the closest one as shotsDict[s][k]
                 # Because one shot is one kill.
                 shotsDict[s][k] = sorted(shotsDict[s][k], key=lambda t: t[1] )[0]
-            
-    
-        # for m in shotsDict[1]:
-        #     print shotsDict[1][m]  
-        # print 'done looping targets  - '
-        # print 'looping through friends...'
 
         for p in friendsInRange:
             m = origMe.getSlope(p)
@@ -313,9 +302,6 @@ class Grid():
                     # If you shot a friend and not a foe don't shot
                     if friend_r < foe_r:
                         del shotsDict[sgn][m]
-
-        # print shotsDict[1]
-        # print shotsDict[-1]
 
         for s in [-1,1]:
             for k in shotsDict[s]:
@@ -409,7 +395,7 @@ s = solution([2,2+3], [1,2], [1,4], 11)
 print('{} = ?'.format(s))
 
 print "start problem"
-s = solution([3,3], [1,1], [2,2], 1000)
+s = solution([3,3], [1,1], [2,2], 100)
 print('{} = ?'.format(s))
 
 # Point testing:
