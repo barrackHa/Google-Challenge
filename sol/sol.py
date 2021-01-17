@@ -229,49 +229,14 @@ class Grid():
         origMe = origTile.friend
         
         self.matrix = grid = self.__gridInit__()
-        
-        # get all foes on the board
-        targetList = [] 
-        friendsList = []
-        for l in grid:
-            # print(f)
-            targetList += map(lambda t: t.foe, l)
-            friendsList += map(lambda t: t.friend, l)
 
-        #remove duplicates 
-        friendsList.remove(origMe)
-        targetList = list(set(targetList))
-        friendsList = list(set(friendsList))
-        self.foes = tuple(targetList)
-        self.friends = tuple(friendsList)
-        
-        #find ranges to target
-        targetsInRange = map(
-            lambda p: (p, origMe.distFromPoint(p)), 
-            targetList
-        )
+        return
 
-        friendsInRange = map(
-            lambda p: (p, origMe.distFromPoint(p)), 
-            friendsList
-        )
-
-        #Remove out of range targets
-        targetsInRange = filter(
-            lambda t : t[1] <= distance,
-            targetsInRange
-        )
-        
-        friendsInRange = filter(
-            lambda t : t[1] <= distance,
-            friendsInRange
-        )
-
-        targetsInRange = sorted(targetsInRange, key = lambda t: t[1])
-        friendsInRange = sorted(friendsInRange, key = lambda t: t[1])
-        
-        self.targetsInRange = targetsInRange
-        self.friendsInRange = friendsInRange
+    @property
+    def numOfClearShots(self):
+        origMe = self.originTile.friend
+        targetsInRange = self.acquireTargetsInRange()
+        friendsInRange = self.identifyFriendlies()
 
         clearShots = []
         # Run through possible targets in range
@@ -281,7 +246,7 @@ class Grid():
             lst = targetsInRange+friendsInRange
             lst.remove(target)
             for p in lst:
-                isInline = p[0].isInlineOfFire(origMe, target[0])
+                isInline = p.isInlineOfFire(origMe, target)
                 if isInline:
                     clearShot = False
                     
@@ -289,11 +254,39 @@ class Grid():
                 clearShots.append(target)
 
         self.clearShots = clearShots        
-        return
-
-    @property
-    def numOfClearShots(self):
         return len(self.clearShots)
+
+    # def getClearShots(self, friend, foes, shotOrigin):
+        
+    def acquireTargetsInRange(self):
+        lst = []
+        shootOrigin = self.originTile.friend
+        d = self.effectiveRange
+        for l in self.matrix:
+            for t in l:
+                if shootOrigin.distFromPoint(t.foe) <= d:
+                    lst.append(t.foe)    
+
+        self.foes = lst
+        return self.foes
+
+    def identifyFriendlies(self):
+        """
+        Return a list of all friend points on the grid, 
+        excluding the origin point.
+        """
+        lst = []
+        shootOrigin = self.originTile.friend
+        d = self.effectiveRange
+        for l in self.matrix:
+            for t in l:
+                if shootOrigin.distFromPoint(t.friend) <= d:
+                    if t.friend == shootOrigin:
+                        continue
+                    lst.append(t.friend)    
+
+        self.friends = lst
+        return self.friends
 
     def __gridInit__(self):
         origTile = self.originTile
@@ -351,3 +344,6 @@ print('{} = 7'.format(s))
 
 s = solution([300,275], [150,150], [185,100], 500)
 print('{} = 9'.format(s))
+
+s = solution([3,3], [1,1], [2,2], 10)
+print('{} = ?'.format(s))
