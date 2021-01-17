@@ -86,6 +86,38 @@ class Point():
                 return True
         return False
 
+    def getSlope(self, other):
+        """
+            self and other - distinct point instances.
+            Returns the slope of the R^2 line equation defined
+            by the points self and other. I.E. if 'y = mx + b',
+            is the line equation then getSlope returns m.
+            If other point is directly above or bellow self,
+            Return inf or -inf respectively.            
+        """
+        if self.x == other.x:
+            if self.y < other.y:
+                return float('inf') 
+            return float('-inf') 
+        return float(self.y - other.y)/float(self.x - other.x)
+
+
+    def sgn(self, other):
+        """
+            self and other - distinct point instances.
+            Returns 1 if the shot from travels in the positive 
+            direction of the X axis, or, if self.x == other.x, 
+            in the positive direction of th Y axis. -1 Otherwise.
+        """
+        s = 1
+        if self.x == other.x: 
+            if other.y < self.y:
+                s = -1
+        if other.x < self.x:
+            s = -1
+        return s
+
+
 class MyRectangle():
     def __init__(self, origPoint, dimensions):
         self.points = {
@@ -228,8 +260,9 @@ class Grid():
         self.effectiveRange = distance
         origMe = origTile.friend
         
+        # print "grid init"
         self.matrix = grid = self.__gridInit__()
-
+        # print 'grid done'
         return
 
     @property
@@ -237,26 +270,58 @@ class Grid():
         origMe = self.originTile.friend
         targetsInRange = self.acquireTargetsInRange()
         friendsInRange = self.identifyFriendlies()
+        # print "getting clearShots"
         clearShots = self.getClearShots(origMe, targetsInRange, friendsInRange)
         return len(clearShots)
 
     def getClearShots(self, origMe, targetsInRange, friendsInRange):
-        clearShots = []
+        clearTargets = []
+        shotsDict = {-1: {}, 1: {}}
         # Run through possible targets in range
+        # print 'start looping targets'
         for target in targetsInRange:
-            #Check if there's something blocking the shot
-            clearShot = True
-            lst = targetsInRange+friendsInRange
-            lst.remove(target)
-            for p in lst:
-                isInline = p.isInlineOfFire(origMe, target)
-                if isInline:
-                    clearShot = False
-                    
-            if clearShot:
-                clearShots.append(target)
+            m = origMe.getSlope(target)
+            sgn = origMe.sgn(target)
+            rangeToTarget = origMe.distFromPoint(target)
+            if m in shotsDict[sgn].keys():
+                shotsDict[sgn][m].append((target,rangeToTarget))
+            else:
+                shotsDict[sgn][m] = [(target,rangeToTarget)]
 
-        return clearShots        
+        for s in [-1,1]:
+            for k in shotsDict[s]:
+                # From all targets in the same line of fire - 
+                # only store the closest one as shotsDict[s][k]
+                # Because one shot is one kill.
+                shotsDict[s][k] = sorted(shotsDict[s][k], key=lambda t: t[1] )[0]
+            
+    
+        # for m in shotsDict[1]:
+        #     print shotsDict[1][m]  
+        # print 'done looping targets  - '
+        # print 'looping through friends...'
+
+        for p in friendsInRange:
+            m = origMe.getSlope(p)
+            sgn = origMe.sgn(p)
+            # If line of fire exists
+            if sgn in shotsDict:
+                if m in shotsDict[sgn]:
+                    # Make sure shot hits foe before freind
+                    foe_r = shotsDict[sgn][m][1]
+                    friend_r = origMe.distFromPoint(p)
+                    # If you shot a friend and not a foe don't shot
+                    if friend_r < foe_r:
+                        del shotsDict[sgn][m]
+
+        # print shotsDict[1]
+        # print shotsDict[-1]
+
+        for s in [-1,1]:
+            for k in shotsDict[s]:
+                clearTargets.append(shotsDict[s][k])
+        
+        return clearTargets
 
     def acquireTargetsInRange(self):
         lst = []
@@ -329,12 +394,6 @@ class Grid():
         return grid
 
 def solution(dimensions, your_position, guard_position, distance):
-    if your_position == guard_position:
-        return 0
-    me = Point(your_position[0], your_position[1])
-    target = Point(guard_position[0], guard_position[1])
-    if distance < me.distFromPoint(target):
-        return 0
     orignTile = Tile(dimensions, [0,0], your_position, guard_position) 
     g = Grid(orignTile, distance)
     return g.numOfClearShots
@@ -345,5 +404,27 @@ print('{} = 7'.format(s))
 s = solution([300,275], [150,150], [185,100], 500)
 print('{} = 9'.format(s))
 
-s = solution([3,3], [1,1], [2,2], 10)
+# print "start problem"
+s = solution([2,2+3], [1,2], [1,4], 11)
 print('{} = ?'.format(s))
+
+print "start problem"
+s = solution([3,3], [1,1], [2,2], 1000)
+print('{} = ?'.format(s))
+
+# Point testing:
+# a = Point(0,0)
+# b = Point(1,1)
+# c = Point(0,1)
+
+# print a.getSlope(b)
+# print a.sgn(b)
+
+# print b.getSlope(a)
+# print b.sgn(a)
+
+# print a.getSlope(c)
+# print a.sgn(c)
+
+# print c.getSlope(a)
+# print c.sgn(a)
