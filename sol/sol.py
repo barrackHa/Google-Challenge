@@ -1,4 +1,4 @@
-import math
+from math import ceil, sqrt
 
 class Point():
     def __init__(self, x, y):
@@ -55,9 +55,10 @@ class Point():
         return Point(mirror_x, mirror_y) 
 
     def distFromPoint(self, other):
+        """Return the euclidean R^2 distance"""
         dx = (self.x - other.x)**2
         dy = (self.y - other.y)**2
-        return math.sqrt(dx+dy)
+        return sqrt(dx+dy)
 
     def isInlineOfFire(self, shooter, target):
         """
@@ -209,6 +210,10 @@ class Tile():
         return
         
     def mirrorRight(self):
+        """
+            Return a new tile we get by mirroing self 
+            along right side of the rectangel.
+        """
         mirrorXPosition = self.rec.right
         mirrorFriend = self.friend.verticalMirror(mirrorXPosition)
         mirrorFoe = self.foe.verticalMirror(mirrorXPosition)
@@ -220,6 +225,10 @@ class Tile():
         return newTile
 
     def mirrorUp(self):
+        """
+            Return a new tile we get by mirroing self 
+            along top side of the rectangel.
+        """
         mirrorYPosition = self.rec.top
         mirrorFriend = self.friend.horizontalMirror(mirrorYPosition)
         mirrorFoe = self.foe.horizontalMirror(mirrorYPosition)
@@ -231,6 +240,10 @@ class Tile():
         return newTile
     
     def mirrorDown(self):
+        """
+            Return a new tile we get by mirroing self 
+            along bottom side of the rectangel.
+        """
         mirrorYPosition = self.rec.bottom
         mirrorFriend = self.friend.horizontalMirror(mirrorYPosition)
         mirrorFoe = self.foe.horizontalMirror(mirrorYPosition)
@@ -243,6 +256,10 @@ class Tile():
         return newTile
 
     def mirrorLeft(self):
+        """
+            Return a new tile we get by mirroing self 
+            along left side of the rectangel.
+        """
         mirrorXPosition = self.rec.left
         mirrorFriend = self.friend.verticalMirror(mirrorXPosition)
         mirrorFoe = self.foe.verticalMirror(mirrorXPosition)
@@ -299,7 +316,7 @@ class Grid():
                 # From all targets in the same line of fire - 
                 # only store the closest one as shotsDict[s][k]
                 # because one shot is one kill - shots stop where they hit.
-                shotsDict[s][k] = sorted(shotsDict[s][k], key=lambda t: t[1] )[0]
+                shotsDict[s][k] = sorted(shotsDict[s][k], key=lambda t: t[1])[0]
 
         # Iter through possible mirros of the shot's origin and check 
         # if they're in the way of the shot - avoiding friendly fire. 
@@ -365,8 +382,8 @@ class Grid():
         dx, dy = origTile.dim
         x,y = tuple(origTile.friend)
         # Clac num of tiles nedded for each axis
-        numOfTilesHorizon = int(math.ceil(float(distance+x)/dx))
-        numOfTilesVert = int(math.ceil(float(distance+y)/dy))
+        numOfTilesHorizon = int(ceil(float(distance+x)/dx))
+        numOfTilesVert = int(ceil(float(distance+y)/dy))
         # Init positive side of Y axis
         grid = [
             [None for _ in range(2*numOfTilesHorizon)] 
