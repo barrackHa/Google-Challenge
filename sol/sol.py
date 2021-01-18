@@ -138,7 +138,6 @@ class MyRectangle():
         }
         self.length = dimensions[0]
         self.hight = dimensions[1]
-        self.mirrors = {}
         return
 
     def __iter__(self):
@@ -206,7 +205,6 @@ class Tile():
         self.friend = friend
         self.foe = foe
         self.dim = tuple(dimensions)
-        self.mirrors = {}
         return
         
     def mirrorRight(self):
@@ -221,7 +219,6 @@ class Tile():
         d = self.dim
 
         newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
-        self.mirrors['right'] = newTile
         return newTile
 
     def mirrorUp(self):
@@ -236,7 +233,6 @@ class Tile():
         d = self.dim
 
         newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
-        self.mirrors['up'] = newTile
         return newTile
     
     def mirrorDown(self):
@@ -252,7 +248,6 @@ class Tile():
         d = self.dim
 
         newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
-        self.mirrors['down'] = newTile
         return newTile
 
     def mirrorLeft(self):
@@ -268,7 +263,6 @@ class Tile():
         d = self.dim
 
         newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
-        self.mirrors['right'] = newTile
         return newTile
 
 class Grid():
@@ -342,23 +336,21 @@ class Grid():
 
     def acquireTargetsInRange(self):
         """Return a list of foes within effective range"""
-        lst = []
+        targetsInRange = []
         shootOrigin = self.originTile.friend
         d = self.effectiveRange
         for l in self.matrix:
             for t in l:
                 if shootOrigin.distFromPoint(t.foe) <= d:
-                    lst.append(t.foe)    
-
-        self.foes = lst
-        return self.foes
+                    targetsInRange.append(t.foe)    
+        return targetsInRange
 
     def identifyFriendlies(self):
         """
             Return a list of all friend points on the grid, 
             excluding the origin point.
         """
-        lst = []
+        frienlies = []
         shootOrigin = self.originTile.friend
         d = self.effectiveRange
         for l in self.matrix:
@@ -366,10 +358,8 @@ class Grid():
                 if shootOrigin.distFromPoint(t.friend) <= d:
                     if t.friend == shootOrigin:
                         continue
-                    lst.append(t.friend)    
-
-        self.friends = lst
-        return self.friends
+                    frienlies.append(t.friend)  
+        return frienlies
 
     def __gridInit__(self):
         """
@@ -477,8 +467,7 @@ def solution(dimensions, your_position, guard_position, distance):
         https://mega.nz/file/Gih2RQZT#dg6OqspFkFF1fvr7Ew-sy_zogCKLGUvo4Cn21jxJD30
 
         So - solution will create an original-tile, then, 
-        with it a Grid and, from the grid - 
-        return the number of clear shots.
+        with it a Grid, and, from the grid - return the number of clear shots.
     """
     orignTile = Tile(dimensions, [0,0], your_position, guard_position) 
     g = Grid(orignTile, distance)
