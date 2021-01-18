@@ -178,10 +178,10 @@ class MyRectangle():
         return (A and B)
     
 class Tile():
-    """A 2 by 2 slice of R^2 with info about friend / foe"""
+    """A width by height slice of R^2 with info about friend / foe"""
     def __init__(self, dimensions, origin, friend, foe):
         """
-            dimensions - length times hight of tile. 
+            dimensions - width times height of tile. 
             origin - the bottome left x,y coordinates marking the beging.
             friens - line must not pass here befor hitting guard. 
             foe - x,y coordinates of target (guard).
@@ -264,6 +264,10 @@ class Grid():
 
     @property
     def numOfClearShots(self):
+        """
+            Returns an integer of the number of distinct directions 
+            that you can fire to hit the elite guard.
+        """
         origMe = self.originTile.friend
         targetsInRange = self.acquireTargetsInRange()
         friendsInRange = self.identifyFriendlies()
@@ -271,6 +275,10 @@ class Grid():
         return len(clearShots)
 
     def getClearShots(self, origMe, targetsInRange, friendsInRange):
+        """
+            Return a list of targets such that the shots are clear.
+            I.E. there are no other friends or foes in the line of fire.
+        """
         clearTargets = []
         shotsDict = {-1: {}, 1: {}}
         # Run through possible targets in range
@@ -278,6 +286,9 @@ class Grid():
             m = origMe.getSlope(target)
             sgn = origMe.sgn(target)
             rangeToTarget = origMe.distFromPoint(target)
+            # Accurding to slope and direction of shot -
+            # Conncat target, range couple to a list of targets 
+            # in the same line of fire.
             if m in shotsDict[sgn].keys():
                 shotsDict[sgn][m].append((target,rangeToTarget))
             else:
@@ -287,9 +298,11 @@ class Grid():
             for k in shotsDict[s]:
                 # From all targets in the same line of fire - 
                 # only store the closest one as shotsDict[s][k]
-                # Because one shot is one kill.
+                # because one shot is one kill - shots stop where they hit.
                 shotsDict[s][k] = sorted(shotsDict[s][k], key=lambda t: t[1] )[0]
 
+        # Iter through possible mirros of the shot's origin and check 
+        # if they're in the way of the shot - avoiding friendly fire. 
         for p in friendsInRange:
             m = origMe.getSlope(p)
             sgn = origMe.sgn(p)
@@ -299,10 +312,11 @@ class Grid():
                     # Make sure shot hits foe before freind
                     foe_r = shotsDict[sgn][m][1]
                     friend_r = origMe.distFromPoint(p)
-                    # If you shot a friend and not a foe don't shot
+                    # If you hit a friend before the foe - don't shot
                     if friend_r < foe_r:
                         del shotsDict[sgn][m]
 
+        # Create a list of clear shots
         for s in [-1,1]:
             for k in shotsDict[s]:
                 clearTargets.append(shotsDict[s][k])
@@ -310,6 +324,7 @@ class Grid():
         return clearTargets
 
     def acquireTargetsInRange(self):
+        """Return a list of foes within effective range"""
         lst = []
         shootOrigin = self.originTile.friend
         d = self.effectiveRange
@@ -323,8 +338,8 @@ class Grid():
 
     def identifyFriendlies(self):
         """
-        Return a list of all friend points on the grid, 
-        excluding the origin point.
+            Return a list of all friend points on the grid, 
+            excluding the origin point.
         """
         lst = []
         shootOrigin = self.originTile.friend
@@ -340,19 +355,27 @@ class Grid():
         return self.friends
 
     def __gridInit__(self):
+        """
+            Comupte the number of Tiles nedded and set them into a
+            2D list. The list represents R^2 subset of rectangels in range 
+            from the shot's origin in radius of the shot's effective range.
+        """
         origTile = self.originTile
         distance = self.effectiveRange
         dx, dy = origTile.dim
         x,y = tuple(origTile.friend)
+        # Clac num of tiles nedded for each axis
         numOfTilesHorizon = int(math.ceil(float(distance+x)/dx))
         numOfTilesVert = int(math.ceil(float(distance+y)/dy))
+        # Init positive side of Y axis
         grid = [
             [None for _ in range(2*numOfTilesHorizon)] 
             for _ in range(numOfTilesVert) 
         ]
+        #Place original tile at the origins of the axies 
         origMe = origTile.friend
         grid[0][numOfTilesHorizon] = origTile
-
+        # Populate upper side of Y axis with mirrors
         for i in range(numOfTilesVert):
             if i>0 :
                 grid[i][numOfTilesHorizon] = grid[i-1][numOfTilesHorizon].mirrorUp()
@@ -361,13 +384,14 @@ class Grid():
                 grid[i][numOfTilesHorizon+j] = grid[i][numOfTilesHorizon+j-1].mirrorRight()
                 grid[i][numOfTilesHorizon-j-1] = grid[i][numOfTilesHorizon-j].mirrorLeft()
         
+        # Init negative side of Y axis
         lower = [
             [None for _ in range(2*numOfTilesHorizon)] 
             for _ in range(numOfTilesVert) 
         ]
-
+        #Place original tile's mirror down at the origins of the upside down axies  
         lower[0][numOfTilesHorizon] = grid[0][numOfTilesHorizon].mirrorDown()
-
+        # Populate negative side of Y axis with mirrors
         for i in range(numOfTilesVert):
             if i>0 :
                 lower[i][numOfTilesHorizon] = lower[i-1][numOfTilesHorizon].mirrorDown()
@@ -375,11 +399,70 @@ class Grid():
             for j in range(1,numOfTilesHorizon):
                 lower[i][numOfTilesHorizon+j] = lower[i][numOfTilesHorizon+j-1].mirrorRight()
                 lower[i][numOfTilesHorizon-j-1] = lower[i][numOfTilesHorizon-j].mirrorLeft()
-        
+        # Concat negative and positive sides of Y axis in the proper form
         grid = grid+list(reversed(lower))
         return grid
 
 def solution(dimensions, your_position, guard_position, distance):
+    """
+        Observation: Let A and B be Points in R^2, 
+        denote AB as the segment between points A and B. 
+        Let O be a point in R^2 - the origin of a beam weapon shot. 
+        Let M be a point on AB such that OM is the initial shot from 
+        O in the direction of line AB. 
+        As a beam weapon's shot bounces back in exactly the same direction it hits -
+        let T be a point on the reflected beam. 
+        Denote ang(OMA) as the angle between the lines OM and MA (as seen in the drawing). 
+        Let OX be neutral extension of OM on the plane such that |OM| = |MX|.
+        Then - by the terms of the problem it holds that - ang(OMA) = ang(TMB).
+        Also - ang(OMA) = ang(BMX) as the angles are alternating. 
+        We get - ang(OMA) = ang(TMB) = ang(BMX). 
+        If we consider AB as a mirror then simple geometry shows X is the mirror of T 
+        and MX is the mirror of MT.
+
+                       X
+                      /|
+                     / |
+            A-------M--|-------B
+                   / \ |
+                  /   \|
+                 O     T
+
+        Thuse, if we want to know what happens after a beam is reflected off a wall, 
+        it is sufficient to see what happens in the mirror. 
+
+        Let a Tile be an 'width' by 'height' slice of R^2. 
+        Let the "original-tile" be the tile defined by the room's measures in 
+        the terms of the problem. The "original-tile" contains an origin point and a target.
+        Let a "Mirrored Tile" be a tile we get as a result of mirroring an existing tile 
+        through one of its sides. 
+        For example: A mirroring of the left tile through its right side.
+                |----------|        |----------|                   
+                |-T----O---|  -->   |---O----T-|
+                |----------|        |----------|
+
+        Let a Grid be a subset of R^2 such that the "original-tile" is starting from (0,0). 
+        The rest of the grid is made by mirroring the "original-tile" to all directions,
+        as long as the tile is within the shot's effective range (AKA distance). 
+        I.E. we are interested in tiles that have at least one of their points of interest 
+        (a mirror of origin or target) within the circle originating at the shot's origin 
+        (AKA your_position) with radius of the shot's effective range.
+        Grid is essentially a list of tiles. As such, it induces a list of "foes" - 
+        guard_position and its reflections within range, and a list of "friends" - 
+        your_position and its reflections within range. 
+
+        In order to solve the problem we must count the number of distinct lines that 
+        start at the original-tile's shot's origin and connect to a target point before 
+        passing through a friend or a foe (AKA - a clear shot). 
+        For visual examples please see - 
+        https://mega.nz/file/j2xySIII#3x2k4L8CROPCbq3RrBIZuMBO6VxXaUxaJ_HCxhyXHt0
+        And -
+        https://mega.nz/file/Gih2RQZT#dg6OqspFkFF1fvr7Ew-sy_zogCKLGUvo4Cn21jxJD30
+
+        So - solution will create an original-tile, then, 
+        with it a Grid and, from the grid - 
+        return the number of clear shots.
+    """
     orignTile = Tile(dimensions, [0,0], your_position, guard_position) 
     g = Grid(orignTile, distance)
     return g.numOfClearShots
