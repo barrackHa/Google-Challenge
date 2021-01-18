@@ -473,33 +473,34 @@ def solution(dimensions, your_position, guard_position, distance):
     g = Grid(orignTile, distance)
     return g.numOfClearShots
 
-s = solution([3,2], [1,1], [2,1], 4)
-print('{} = 7'.format(s))
+if __name__ == "__main__":
+    s = solution([3,2], [1,1], [2,1], 4)
+    print('{} = 7'.format(s))
 
-s = solution([300,275], [150,150], [185,100], 500)
-print('{} = 9'.format(s))
+    s = solution([300,275], [150,150], [185,100], 500)
+    print('{} = 9'.format(s))
 
-# print "start problem"
-s = solution([2,2+3], [1,2], [1,4], 11)
-print('{} = ?'.format(s))
+    # print "start problem"
+    s = solution([2,2+3], [1,2], [1,4], 11)
+    print('{} = ?'.format(s))
 
-print "start problem"
-s = solution([3,3], [1,1], [2,2], 100)
-print('{} = ?'.format(s))
+    print "start problem"
+    s = solution([3,3], [1,1], [2,2], 100)
+    print('{} = ?'.format(s))
 
-# Point testing:
-# a = Point(0,0)
-# b = Point(1,1)
-# c = Point(0,1)
+    # Point testing:
+    # a = Point(0,0)
+    # b = Point(1,1)
+    # c = Point(0,1)
 
-# print a.getSlope(b)
-# print a.sgn(b)
+    # print a.getSlope(b)
+    # print a.sgn(b)
 
-# print b.getSlope(a)
-# print b.sgn(a)
+    # print b.getSlope(a)
+    # print b.sgn(a)
 
-# print a.getSlope(c)
-# print a.sgn(c)
+    # print a.getSlope(c)
+    # print a.sgn(c)
 
-# print c.getSlope(a)
-# print c.sgn(a)
+    # print c.getSlope(a)
+    # print c.sgn(a)
