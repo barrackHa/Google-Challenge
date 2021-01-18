@@ -218,8 +218,7 @@ class Tile():
         mirrorOrigin = self.rec.points['bottomRight']
         d = self.dim
 
-        newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
-        return newTile
+        return Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe) 
 
     def mirrorUp(self):
         """
@@ -232,8 +231,7 @@ class Tile():
         mirrorOrigin = self.rec.points['topLeft']
         d = self.dim
 
-        newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
-        return newTile
+        return Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
     
     def mirrorDown(self):
         """
@@ -247,8 +245,7 @@ class Tile():
                             .horizontalMirror(mirrorYPosition)
         d = self.dim
 
-        newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
-        return newTile
+        return Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
 
     def mirrorLeft(self):
         """
@@ -262,8 +259,7 @@ class Tile():
                             .verticalMirror(mirrorXPosition)
         d = self.dim
 
-        newTile = Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
-        return newTile
+        return Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
 
 class Grid():
     def __init__(self, origTile, distance):
