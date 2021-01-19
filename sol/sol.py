@@ -359,51 +359,44 @@ class Grid():
         # Clac num of tiles nedded for each axis
         numOfTilesHorizon = int(ceil(float(distance+x)/dx))
         numOfTilesVert = int(ceil(float(distance+y)/dy))
-        # Init positive side of Y axis
-        grid = [
-            [None for _ in range(2*numOfTilesHorizon)] 
-            for _ in range(numOfTilesVert) 
-        ]
-        #Place original tile at the origins of the axies 
-        origMe = origTile.friend
-        grid[0][numOfTilesHorizon] = origTile
-        # Populate upper side of Y axis with mirrors
-        for i in range(numOfTilesVert):
-            if i>0 :
-                grid[i][numOfTilesHorizon] = grid[i-1][numOfTilesHorizon]\
-                                                .mirrorFactory('up')
-            grid[i][numOfTilesHorizon-1] = grid[i][numOfTilesHorizon]\
-                                                .mirrorFactory('left')
-            for j in range(1,numOfTilesHorizon):
-                r_index = numOfTilesHorizon+j
-                l_index = numOfTilesHorizon-j
-                grid[i][r_index] = grid[i][r_index-1].mirrorFactory('right')
-                grid[i][numOfTilesHorizon-j-1] = grid[i][l_index]\
-                                                    .mirrorFactory('left')
-        
-        # Init negative side of Y axis
-        lower = [
-            [None for _ in range(2*numOfTilesHorizon)] 
-            for _ in range(numOfTilesVert) 
-        ]
-        #Place original tile's mirror down at the origins of the upside down axies  
-        lower[0][numOfTilesHorizon] = grid[0][numOfTilesHorizon]\
-                                        .mirrorFactory('down')
-        # Populate negative side of Y axis with mirrors
-        for i in range(numOfTilesVert):
-            if i>0 :
-                lower[i][numOfTilesHorizon] = lower[i-1][numOfTilesHorizon]\
-                                                .mirrorFactory('down')
-            lower[i][numOfTilesHorizon-1] = lower[i][numOfTilesHorizon]\
-                                                .mirrorFactory('left')
-            for j in range(1,numOfTilesHorizon):
-                r_index = numOfTilesHorizon+j
-                l_index = numOfTilesHorizon-j
-                lower[i][r_index] = lower[i][r_index-1].mirrorFactory('right')
-                lower[i][l_index-1] = lower[i][l_index].mirrorFactory('left')
+        # Generate positive and negative sides of Y axis
+        upper = self.__gridHelper__(numOfTilesHorizon, numOfTilesVert, origTile)
+        lower = self.__gridHelper__(
+            numOfTilesHorizon, 
+            numOfTilesVert, 
+            origTile.mirrorFactory('down'),
+            upsideDown=True
+        ) 
         # Concat negative and positive sides of Y axis in the proper form
-        grid = grid+list(reversed(lower))
+        grid = upper+list(reversed(lower))
         return grid
+
+    def __gridHelper__(self, width, hieght, genTile, upsideDown=False):
+        """
+            Return a 2*width by hieght matrix such that each entry is
+            a mirror of the generating tile (genTile) in its respective 
+            direction. genTile is placed on (0,0) - grid[0][width] and
+            is mirrored repeatedly in order to populate the grid.
+            upsideDown takes into consideration the grid starts from 
+            the top and runs down in the direction of Y's negative values.
+        """
+        vertMrrrDirc = 'down' if upsideDown else 'up'
+        grid = [
+            [None for _ in range(2*width)] 
+            for _ in range(hieght) 
+        ]
+        # Place original tile at the origins of the axies 
+        grid[0][width] = genTile
+        # Populate with mirrors
+        for i in range(hieght):
+            if i>0 :
+                grid[i][width] = grid[i-1][width].mirrorFactory(vertMrrrDirc)
+            grid[i][width-1] = grid[i][width].mirrorFactory('left')
+            for j in range(1,width):
+                grid[i][width+j] = grid[i][width+j-1].mirrorFactory('right')
+                grid[i][width-j-1] = grid[i][width-j].mirrorFactory('left')
+        return grid
+        
 
 def solution(dimensions, your_position, guard_position, distance):
     """
