@@ -89,9 +89,16 @@ class Point():
                 return True
         return False
 
-    def addPointToAx(self, ax, color):
-        x,y = tuple(self)    
-        ax.scatter(x, y, s=10, facecolor=color)
+    def addPointToAx(self, ax, color='blue'):
+        x,y = tuple(self)
+        lbl = ''
+        if color == 'black': 
+            lbl = 'Origin'
+        elif color == 'red':
+            lbl == 'Foe'
+        else:
+            lbl = 'Friend'
+        ax.scatter(x, y, s=10, facecolor=color, label=lbl)
         return
 
     def addLineBetween2PointsToAx(self, ax, p):
@@ -167,7 +174,8 @@ class MyRectangle():
             orignPoint, w, h,
              edgecolor = color,
              fill=False,
-             lw=1
+             lw=1,
+             label='Origin Rectangle' if color == 'black' else ''
         ))
         return
 
@@ -396,7 +404,8 @@ class Grid():
             r,
             edgecolor = 'green',
             fill=False,
-            lw=1 
+            lw=1,
+            label = 'Effective Range'
         ))
         
         # Draw clear shots:
@@ -404,6 +413,13 @@ class Grid():
         for t in clearShots:
             origMe.addLineBetween2PointsToAx(ax, t[0])
 
+        titleStr = 'The Grid defind by origin - {}, gaurd - {}, with range - {}'.format(
+            self.originTile.friend,
+            self.originTile.foe,
+            self.effectiveRange
+        )
+        plt.title(titleStr)
+        #ax.legend()
         #display plot
         plt.show()
         return
@@ -411,12 +427,12 @@ class Grid():
 t = Tile([3, 2],[0,0],[1, 1],[2, 1])
 g = Grid(t, 4)
 print(g.numOfClearShots)
-# g.drawGrid()
+g.drawGrid()
 
-# t1 = Tile([3,2], [0,0], [1,1], [2,1])
-# g1 = Grid(t1, 4)
-# print('{} = 7'.format(g1.numOfClearShots))
-# # g1.drawGrid()
+t1 = Tile([3,3], [0,0], [1,1], [1,2])
+g1 = Grid(t1, 4)
+print('{} = 7'.format(g1.numOfClearShots))
+# g1.drawGrid()
 
 # t2 = Tile([300,275], [0,0], [150,150], [185,100])
 # g2 = Grid(t2, 500)
@@ -425,9 +441,9 @@ print(g.numOfClearShots)
 # t1 = Tile([4, 4],[0,0],[1, 1],[2, 2])
 
 # t3 = Tile([4,7], [0,0], [1,1], [3,2+3])
-friend = [1,1]
-foe =  [1250-1,1250-1]
-t3 = Tile([3,3], [0,0], [1,1], [2,1])
-g3 = Grid(t3, 1000)
-print('{} = ?'.format(g3.numOfClearShots))
+# friend = [1,1]
+# foe =  [1250-1,1250-1]
+# t3 = Tile([3,3], [0,0], [1,1], [2,1])
+# g3 = Grid(t3, 1000)
+# print('{} = ?'.format(g3.numOfClearShots))
 #g3.drawGrid()
