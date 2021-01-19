@@ -189,7 +189,7 @@ class Tile():
             |----------|
             |-------G--|  ^ 
             |---F------|  | 
-            |----------| <- length * hight tile
+            |----------| <- width * hight tile
             ^ begins here
         """
         self.origin = Point(origin[0], origin[1])
@@ -276,6 +276,21 @@ class Grid():
             I.E. there are no other friends or foes in the line of fire.
         """
         clearTargets = []
+        shotsDict = self.shotsDictGen(origMe, targetsInRange)
+        # Iter through possible mirros of the shot's origin and check 
+        # if they're in the way of the shot - avoiding friendly fire. 
+        for p in friendsInRange:
+            m = origMe.getSlope(p)
+            sgn = origMe.sgn(p)
+            if self.isPblockingShot(sgn, m, p, shotsDict):
+                del shotsDict[sgn][m]
+        # Create a list of clear shots
+        for s in [-1,1]:
+            for k in shotsDict[s]:
+                clearTargets.append(shotsDict[s][k])
+        return clearTargets
+
+    def shotsDictGen(slef, origMe, targetsInRange):
         shotsDict = {-1: {}, 1: {}}
         # Run through possible targets in range
         for target in targetsInRange:
@@ -289,35 +304,25 @@ class Grid():
                 shotsDict[sgn][m].append((target,rangeToTarget))
             else:
                 shotsDict[sgn][m] = [(target,rangeToTarget)]
-
+        # From all targets in the same line of fire - 
+        # only store the closest one as shotsDict[s][k]
+        # because one shot is one kill - shots stop where they hit.
         for s in [-1,1]:
             for k in shotsDict[s]:
-                # From all targets in the same line of fire - 
-                # only store the closest one as shotsDict[s][k]
-                # because one shot is one kill - shots stop where they hit.
                 shotsDict[s][k] = sorted(shotsDict[s][k], key=lambda t: t[1])[0]
+        return shotsDict
 
-        # Iter through possible mirros of the shot's origin and check 
-        # if they're in the way of the shot - avoiding friendly fire. 
-        for p in friendsInRange:
-            m = origMe.getSlope(p)
-            sgn = origMe.sgn(p)
-            # If line of fire exists
-            if sgn in shotsDict:
-                if m in shotsDict[sgn]:
-                    # Make sure shot hits foe before freind
-                    foe_r = shotsDict[sgn][m][1]
-                    friend_r = origMe.distFromPoint(p)
-                    # If you hit a friend before the foe - don't shot
-                    if friend_r < foe_r:
-                        del shotsDict[sgn][m]
-
-        # Create a list of clear shots
-        for s in [-1,1]:
-            for k in shotsDict[s]:
-                clearTargets.append(shotsDict[s][k])
-        
-        return clearTargets
+    def isPblockingShot(self, sgn, m, p, shotsDict):
+        """Return True iff point p is in some line of fire in shotsDict"""
+        # If line of fire exists
+        if sgn in shotsDict:
+            if m in shotsDict[sgn]:
+                # Make sure shot hits foe before p
+                foe_r = shotsDict[sgn][m][1]
+                p_r = self.originTile.friend.distFromPoint(p)
+                if p_r < foe_r:
+                    return True
+        return False
 
     def acquireTargetsInRange(self):
         """Return a list of foes within effective range"""
