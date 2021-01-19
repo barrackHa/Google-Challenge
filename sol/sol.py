@@ -207,59 +207,48 @@ class Tile():
         self.dim = tuple(dimensions)
         return
         
-    def mirrorRight(self):
-        """
-            Return a new tile we get by mirroing self 
-            along right side of the rectangel.
-        """
-        mirrorXPosition = self.rec.right
-        mirrorFriend = self.friend.verticalMirror(mirrorXPosition)
-        mirrorFoe = self.foe.verticalMirror(mirrorXPosition)
-        mirrorOrigin = self.rec.points['bottomRight']
-        d = self.dim
+    def mirrorFactory(self, direction):
+        mirrorConf = {
+            'up': {
+                'friend': self.friend.horizontalMirror(self.rec.top),
+                'foe': self.foe.horizontalMirror(self.rec.top),
+                'origin': self.rec.points['topLeft']
+            },
+            'down': {
+                'friend': self.friend.horizontalMirror(self.rec.bottom),
+                'foe': self.foe.horizontalMirror(self.rec.bottom),
+                'origin': self.rec.points['topLeft']\
+                            .horizontalMirror(self.rec.bottom)
+            },
+            'left': {
+                'friend': self.friend.verticalMirror(self.rec.left),
+                'foe': self.foe.verticalMirror(self.rec.left),
+                'origin': self.rec.points['bottomRight']\
+                            .verticalMirror(self.rec.left)
+            },
+            'right': {
+                'friend': self.friend.verticalMirror(self.rec.right),
+                'foe': self.foe.verticalMirror(self.rec.right),
+                'origin': self.rec.points['bottomRight']
+            }
+        }
 
-        return Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe) 
+        try:
+            direction = direction.lower()
+            conf = mirrorConf[direction]
+        except Exception as e:
+            msg = str(e) + '\n'
+            legalInput = mirrorConf.keys()
+            msg += 'mirrorFactory only accepts {} as valid input!'\
+                    .format(legalInput)
+            raise Exception(msg)
 
-    def mirrorUp(self):
-        """
-            Return a new tile we get by mirroing self 
-            along top side of the rectangel.
-        """
-        mirrorYPosition = self.rec.top
-        mirrorFriend = self.friend.horizontalMirror(mirrorYPosition)
-        mirrorFoe = self.foe.horizontalMirror(mirrorYPosition)
-        mirrorOrigin = self.rec.points['topLeft']
-        d = self.dim
-
-        return Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
-    
-    def mirrorDown(self):
-        """
-            Return a new tile we get by mirroing self 
-            along bottom side of the rectangel.
-        """
-        mirrorYPosition = self.rec.bottom
-        mirrorFriend = self.friend.horizontalMirror(mirrorYPosition)
-        mirrorFoe = self.foe.horizontalMirror(mirrorYPosition)
-        mirrorOrigin = self.rec.points['topLeft']\
-                            .horizontalMirror(mirrorYPosition)
-        d = self.dim
-
-        return Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
-
-    def mirrorLeft(self):
-        """
-            Return a new tile we get by mirroing self 
-            along left side of the rectangel.
-        """
-        mirrorXPosition = self.rec.left
-        mirrorFriend = self.friend.verticalMirror(mirrorXPosition)
-        mirrorFoe = self.foe.verticalMirror(mirrorXPosition)
-        mirrorOrigin = self.rec.points['bottomRight']\
-                            .verticalMirror(mirrorXPosition)
-        d = self.dim
-
-        return Tile(d, mirrorOrigin, mirrorFriend, mirrorFoe)
+        return Tile(
+            self.dim, 
+            conf['origin'], 
+            conf['friend'], 
+            conf['foe']
+        )
 
 class Grid():
     def __init__(self, origTile, distance):
@@ -381,11 +370,16 @@ class Grid():
         # Populate upper side of Y axis with mirrors
         for i in range(numOfTilesVert):
             if i>0 :
-                grid[i][numOfTilesHorizon] = grid[i-1][numOfTilesHorizon].mirrorUp()
-            grid[i][numOfTilesHorizon-1] = grid[i][numOfTilesHorizon].mirrorLeft()
+                grid[i][numOfTilesHorizon] = grid[i-1][numOfTilesHorizon]\
+                                                .mirrorFactory('up')
+            grid[i][numOfTilesHorizon-1] = grid[i][numOfTilesHorizon]\
+                                                .mirrorFactory('left')
             for j in range(1,numOfTilesHorizon):
-                grid[i][numOfTilesHorizon+j] = grid[i][numOfTilesHorizon+j-1].mirrorRight()
-                grid[i][numOfTilesHorizon-j-1] = grid[i][numOfTilesHorizon-j].mirrorLeft()
+                r_index = numOfTilesHorizon+j
+                l_index = numOfTilesHorizon-j
+                grid[i][r_index] = grid[i][r_index-1].mirrorFactory('right')
+                grid[i][numOfTilesHorizon-j-1] = grid[i][l_index]\
+                                                    .mirrorFactory('left')
         
         # Init negative side of Y axis
         lower = [
@@ -393,15 +387,20 @@ class Grid():
             for _ in range(numOfTilesVert) 
         ]
         #Place original tile's mirror down at the origins of the upside down axies  
-        lower[0][numOfTilesHorizon] = grid[0][numOfTilesHorizon].mirrorDown()
+        lower[0][numOfTilesHorizon] = grid[0][numOfTilesHorizon]\
+                                        .mirrorFactory('down')
         # Populate negative side of Y axis with mirrors
         for i in range(numOfTilesVert):
             if i>0 :
-                lower[i][numOfTilesHorizon] = lower[i-1][numOfTilesHorizon].mirrorDown()
-            lower[i][numOfTilesHorizon-1] = lower[i][numOfTilesHorizon].mirrorLeft()
+                lower[i][numOfTilesHorizon] = lower[i-1][numOfTilesHorizon]\
+                                                .mirrorFactory('down')
+            lower[i][numOfTilesHorizon-1] = lower[i][numOfTilesHorizon]\
+                                                .mirrorFactory('left')
             for j in range(1,numOfTilesHorizon):
-                lower[i][numOfTilesHorizon+j] = lower[i][numOfTilesHorizon+j-1].mirrorRight()
-                lower[i][numOfTilesHorizon-j-1] = lower[i][numOfTilesHorizon-j].mirrorLeft()
+                r_index = numOfTilesHorizon+j
+                l_index = numOfTilesHorizon-j
+                lower[i][r_index] = lower[i][r_index-1].mirrorFactory('right')
+                lower[i][l_index-1] = lower[i][l_index].mirrorFactory('left')
         # Concat negative and positive sides of Y axis in the proper form
         grid = grid+list(reversed(lower))
         return grid
