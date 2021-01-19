@@ -294,7 +294,7 @@ class Grid():
             sgn = origMe.sgn(target)
             rangeToTarget = origMe.distFromPoint(target)
             # Accurding to slope and direction of shot -
-            # Conncat target, range couple to a list of targets 
+            # Conncat (target, range) couple to a list of targets 
             # in the same line of fire.
             if m in shotsDict[sgn].keys():
                 shotsDict[sgn][m].append((target,rangeToTarget))
