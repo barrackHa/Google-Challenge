@@ -340,7 +340,7 @@ class Grid():
             Return a list of all friend points on the grid, 
             excluding the origin point.
         """
-        frienlies = []
+        friendlies = []
         shootOrigin = self.originTile.friend
         d = self.effectiveRange
         for l in self.matrix:
@@ -348,8 +348,8 @@ class Grid():
                 if shootOrigin.distFromPoint(t.friend) <= d:
                     if t.friend == shootOrigin:
                         continue
-                    frienlies.append(t.friend)  
-        return frienlies
+                    friendlies.append(t.friend)  
+        return friendlies
 
     def __gridInit__(self):
         """
