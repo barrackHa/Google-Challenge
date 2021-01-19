@@ -380,7 +380,7 @@ class Grid():
             upsideDown takes into consideration the grid starts from 
             the top and runs down in the direction of Y's negative values.
         """
-        vertMrrrDirc = 'down' if upsideDown else 'up'
+        vertMrrDirc = 'down' if upsideDown else 'up'
         grid = [
             [None for _ in range(2*width)] 
             for _ in range(hieght) 
@@ -390,7 +390,7 @@ class Grid():
         # Populate with mirrors
         for i in range(hieght):
             if i>0 :
-                grid[i][width] = grid[i-1][width].mirrorFactory(vertMrrrDirc)
+                grid[i][width] = grid[i-1][width].mirrorFactory(vertMrrDirc)
             grid[i][width-1] = grid[i][width].mirrorFactory('left')
             for j in range(1,width):
                 grid[i][width+j] = grid[i][width+j-1].mirrorFactory('right')
