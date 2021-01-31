@@ -56,7 +56,11 @@ if __name__ == '__main__':
     for i in range(len(A)):
         distance, predecessor, negativeWeightCycles = bellman_ford(graph, source=i)
         bestPathsCost.append(list(distance.values()))
+        bestPaths.append(list(predecessor.values()))
+        #print(predecessor)
     
     for l in bestPathsCost:
         print(l)
 
+    for l in bestPaths:
+        print(l)
