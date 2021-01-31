@@ -43,12 +43,19 @@ def getAllPaths(n):
     s = list(range(n-2))
     paths = []
     for path in chain.from_iterable(combinations(s, r) for r in range(n-1)):
-        paths.append(['s'] + list(path) + ['t'])
+        p = [i+1 for i in path]
+        paths.append([0] + p + [n-1])
     return paths
          
 def timeOf(path, arr):
-    
-
+    p = path[:]
+    tot = 0
+    tmpDest = p.pop()
+    while len(p) > 0:
+        tmpSource = p[-1]
+        tot += arr[tmpSource][tmpDest]
+        tmpDest = p.pop()
+    return tot
 
 def solution(arr, timeLimit):
     graph = arryToGraphDict(arr)
@@ -68,14 +75,22 @@ def solution(arr, timeLimit):
     # the shortest path from u to v takes bestPathsCost[u,v] secondes. 
 
     paths = getAllPaths(dim)
-    legalPaths = []
-    print paths
-    for path in pathes:
-        if timeOf(path, arr) < timeLimit:
-            legalPaths.append(legalPaths)
+    legalPaths, bestPaths = [], []
+    maxBunniesNum = i = 0
+    for path in paths:        
+        if timeOf(path, bestPathsCost) <= timeLimit:
+            l = len(path)-2
+            maxBunniesNum = l if maxBunniesNum < l else maxBunniesNum
+            legalPaths.append(path[1:-1])
+    legalPaths = sorted(legalPaths, key=lambda l: len(l), reverse=True)
+    tmpLen = len(legalPaths[i])
+    for p in legalPaths:
+        if len(p) == maxBunniesNum:
+            bestPaths.append(p)
+    bestPaths = sorted(bestPaths)
+    return [i-1 for i in bestPaths[0]]
 
-
-solution([
+print solution([
     [0, 2, 2, 2, -1], 
     [9, 0, 2, 2, -1], 
     [9, 3, 0, 2, -1], 
@@ -86,3 +101,14 @@ solution([
 )
 # Output:
 #     [1, 2]
+
+print solution([
+    [0, 1, 1, 1, 1], 
+    [1, 0, 1, 1, 1], 
+    [1, 1, 0, 1, 1], 
+    [1, 1, 1, 0, 1], 
+    [1, 1, 1, 1, 0]], 
+    3
+)
+
+# times, times_limit
