@@ -1,4 +1,25 @@
-from itertools import chain, combinations
+from itertools import chain, combinations, permutations
+
+subsetsDict = {
+    0: [[]],
+    1: [[], [0]],
+    2: [[], [0], [1], [0,1]],
+    3: [[], [0], [1], [2], [0,1], [0,2], [1,2], [0,1,2]],
+    4: [    
+        [], [0,1,2,3], 
+        [0], [1], [2], [3], 
+        [0,1], [0,2], [0,3], [1,2], [1,3], [2,3],
+        [0,1,2], [1,2,3], [0,1,3], [0,2,3]
+    ],    
+    5: [
+        [], [0,1,2,3,4],
+        [0], [1], [2], [3], [4], 
+        [0,1], [0,2], [0,3], [0,4], [1,2], [1,3], [1,4], [2,3], [2,4], [3,4],
+        [0,1,2], [0,1,3], [0,1,4], [0,2,3], [0,2,4], [0,3,4],
+        [1,2,3], [1,2,4], [1,3,4], [2,3,4],
+        [0,1,2,3], [0,1,2,4], [0,1,3,4], [0,2,3,4], [1,2,3,4]
+    ]
+}  
 
 def arryToGraphDict(A):
     dim  = len(A)
@@ -42,9 +63,13 @@ def bellman_ford(graph, source):
 def getAllPaths(n):
     s = list(range(n-2))
     paths = []
-    for path in chain.from_iterable(combinations(s, r) for r in range(n-1)):
-        p = [i+1 for i in path]
-        paths.append([0] + p + [n-1])
+    #for path in chain.from_iterable(combinations(s, r) for r in range(n-1)):
+    for metaPath in subsetsDict[n-2]:
+        for path in permutations(metaPath):
+            p = [i+1 for i in path]
+            paths.append([0] + p + [n-1])
+    for p in paths:
+        print p
     return paths
          
 def timeOf(path, arr):
@@ -76,14 +101,13 @@ def solution(arr, timeLimit):
 
     paths = getAllPaths(dim)
     legalPaths, bestPaths = [], []
-    maxBunniesNum = i = 0
+    maxBunniesNum = 0
     for path in paths:        
         if timeOf(path, bestPathsCost) <= timeLimit:
             l = len(path)-2
             maxBunniesNum = l if maxBunniesNum < l else maxBunniesNum
             legalPaths.append(path[1:-1])
     legalPaths = sorted(legalPaths, key=lambda l: len(l), reverse=True)
-    tmpLen = len(legalPaths[i])
     for p in legalPaths:
         if len(p) == maxBunniesNum:
             bestPaths.append(p)
@@ -98,17 +122,39 @@ print solution([
     [9, 3, 2, 2,  0]
     ],
     1
-)
+) == [1,2]
 # Output:
 #     [1, 2]
 
-print solution([
-    [0, 1, 1, 1, 1], 
-    [1, 0, 1, 1, 1], 
-    [1, 1, 0, 1, 1], 
-    [1, 1, 1, 0, 1], 
-    [1, 1, 1, 1, 0]], 
-    3
-)
+# print solution([
+#     [0, 1, 1, 1, 1], 
+#     [1, 0, 1, 1, 1], 
+#     [1, 1, 0, 1, 1], 
+#     [1, 1, 1, 0, 1], 
+#     [1, 1, 1, 1, 0]], 
+#     3
+# ) == [0,1]
 
+# print solution([
+#     [0,-10],
+#     [1,0]
+# ],1) == []
+
+# print solution([
+#     [0, 0, 0, 0, 0], 
+#     [0, 0, 0, 0, 0], 
+#     [0, 0, 0, 0, 0], 
+#     [0, 0, 0, 0, 0], 
+#     [0, 0, 0, 0, 0]], 
+#     0
+# ) == [0,1,2]
+
+# print solution([
+#     [0,  1,  5,  5,  2], 
+#     [10, 0,  2,  6,  10], 
+#     [10, 10, 0,  1,  5], 
+#     [10, 10, 10, 0,  1], 
+#     [10, 10, 10, 10, 0]], 
+#     5
+# ) == [0,1,2]
 # times, times_limit
