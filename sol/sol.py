@@ -1,118 +1,85 @@
-from itertools import chain, combinations, permutations
+#! python        
+from itertools import permutations
 
-subsetsDict = {
-    0: [[]],
-    1: [[], [0]],
-    2: [[], [0], [1], [0,1]],
-    3: [[], [0], [1], [2], [0,1], [0,2], [1,2], [0,1,2]],
-    4: [    
-        [], [0,1,2,3], 
-        [0], [1], [2], [3], 
-        [0,1], [0,2], [0,3], [1,2], [1,3], [2,3],
-        [0,1,2], [1,2,3], [0,1,3], [0,2,3]
-    ],    
-    5: [
-        [], [0,1,2,3,4],
-        [0], [1], [2], [3], [4], 
-        [0,1], [0,2], [0,3], [0,4], [1,2], [1,3], [1,4], [2,3], [2,4], [3,4],
-        [0,1,2], [0,1,3], [0,1,4], [0,2,3], [0,2,4], [0,3,4],
-        [1,2,3], [1,2,4], [1,3,4], [2,3,4],
-        [0,1,2,3], [0,1,2,4], [0,1,3,4], [0,2,3,4], [1,2,3,4]
-    ]
-}  
-
-def arryToGraphDict(A):
-    dim  = len(A)
-    graph = {}
-    for i in range(dim):
-        line = A[i][:]
-        line.pop(i)
-        nodes = list(range(dim))
-        nodes.pop(i)
-        graph[i] = dict(zip(nodes,line))
-    return graph
-
-def bellman_ford(graph, source):
-    # Step 1: Prepare the distance and predecessor for each node
-    distance, predecessor = dict(), dict()
-    negativeWeightCycles = []
-    for node in graph:
-        distance[node] = float('inf')
-        predecessor[node] = None
-    distance[source] = 0
-
-    # Step 2: Relax the edges
-    for _ in range(len(graph) - 1):
-        for node in graph:
-            for neighbour in graph[node]:
-                # If the distance between the node and the neighbour is lower than the current, store it
-                if distance[neighbour] > distance[node] + graph[node][neighbour]:
-                    distance[neighbour] = distance[node] + graph[node][neighbour]
-                    if predecessor[neighbour]:
-                        predecessor[neighbour].append(node) 
-                    else:
-                        predecessor[neighbour] = [node]
-    # Step 3: Check for negative weight cycles
-    for node in graph:
-        for neighbour in graph[node]:
-            if distance[neighbour] > distance[node] + graph[node][neighbour]:
-                negativeWeightCycles.append((node,neighbour))
- 
-    return distance, predecessor, negativeWeightCycles
+def getBestPathsTimes(time):
+    """
+    A derivation of Bellman-Ford.
+    In the case there is no negativeWeightCycles in the graph -
+    Returns the best posible times from i to j for all i,j nodes on graph.
+    """
+    dim = len(time)
+    for k in range(dim):
+        for i in range(dim):
+            for j in range(dim):
+                if time[i][j] > time[i][k] + time[k][j]:
+                    time[i][j] = time[i][k] + time[k][j]
+    return time
     
-def getAllPaths(n):
-    s = list(range(n-2))
-    paths = []
-    #for path in chain.from_iterable(combinations(s, r) for r in range(n-1)):
-    for metaPath in subsetsDict[n-2]:
-        for path in permutations(metaPath):
-            p = [i+1 for i in path]
-            paths.append([0] + p + [n-1])
-    for p in paths:
-        print p
-    return paths
-         
-def timeOf(path, arr):
-    p = path[:]
+def negativeWeightCyclesExists(graph):
+    for i in range(len(graph)):
+        # A negative weight cycles means a node and a cycle on it
+        # exists, such that walking the cycle adds time to the clock.
+        if graph[i][i] < 0: 
+            return True
+    return False
+    
+def timeOf(path, time):
+    """
+    path: An ordered list of bunnies 
+    arr: A 2D arr such that arr[i][j] is the time from node i to node j
+    return: total time of legel (start at 0 , end at -1) walk on graph. 
+    """
+    p = [0] + path[:] + [-1]
     tot = 0
-    tmpDest = p.pop()
-    while len(p) > 0:
-        tmpSource = p[-1]
-        tot += arr[tmpSource][tmpDest]
-        tmpDest = p.pop()
+    for i in range(len(p)-1):
+        source = p[i]
+        dest = p[i+1]
+        tot += time[source][dest]
     return tot
 
-def solution(arr, timeLimit):
-    graph = arryToGraphDict(arr)
-    bunniesLst = list(range(len(arr)-2))
-    dim = len(arr)
+def solution(time, time_limit):
+    """
+    Let G be the directed, bidirectional, full graph with nodes marking
+    the start, end and bunnies location. We have an edge between any 2 nodes
+    with wieght defind by 'time' array. 
+    Solution will:
+    1) use the Bellman-Ford method to relax paths from any 
+    node to any node (I.E fix each node as a starting node and
+    find best paths from it to all the rest.
+    2) In case negative weight cycles exists - we can keep improving #1
+    so we can always have more time to get more bunnies - return all bunnies.
+    3) Now, we have a "new" graph we get from #1 and #2, such that it has 
+    no negative weight cycles and, for every 2 nodes i,j, the shortest time 
+    from i to j is the weight of the edge (i->j). we must start at the start
+    node and finish at the end node. Because the new graph is optimal,
+    revisiting nodes can only take time so we won't do it (I.E. there's no reson 
+    to go back to a visted node. For exapmle (s,0,1,0,e) is the same as (s,0,1,e)
+    but takes at least the same time). All we have now is decide which 
+    bunnies we go get. We do that by looking at all possible combinations.
+    Complexity: #1 - O(pow(n,3)). #2 - O(n). 
+    #3 - O(sum([ i! for i in range(n-1)])) (oh no o:). 
+    """
+    bunniesNum = len(time) - 2
+    time = getBestPathsTimes(time)
     
-    bestPathsCost, bestPaths, cycles = [], [], []
-    for i in range(dim):
-        distance, predecessor, negativeWeightCycles = bellman_ford(graph, source=i)
-        bestPathsCost.append(list(distance.values()))
-        if negativeWeightCycles:
-            return bunniesLst
-    
-    # Now we have a directed graph made from arr.
-    # In the graph no negative weight cycles otherwise - func had returned.
-    # In the new graph, for any u,v nodes in ['s',0,1,..,n,'e'], 
-    # the shortest path from u to v takes bestPathsCost[u,v] secondes. 
+    if negativeWeightCyclesExists(time):
+        # We can accumulate as much time we need and get all bunnies.
+        return list(range(bunniesNum))
 
-    paths = getAllPaths(dim)
-    legalPaths, bestPaths = [], []
-    maxBunniesNum = 0
-    for path in paths:        
-        if timeOf(path, bestPathsCost) <= timeLimit:
-            l = len(path)-2
-            maxBunniesNum = l if maxBunniesNum < l else maxBunniesNum
-            legalPaths.append(path[1:-1])
-    legalPaths = sorted(legalPaths, key=lambda l: len(l), reverse=True)
-    for p in legalPaths:
-        if len(p) == maxBunniesNum:
-            bestPaths.append(p)
-    bestPaths = sorted(bestPaths)
-    return [i-1 for i in bestPaths[0]]
+    # iterate on all possible number of retrievable bunnies 
+    # starting with the largest one - all bunnies.
+    for i in reversed(range(bunniesNum+1)):
+        # Per i, iterate over all possible ways to retrive i bunnies.
+        # 'permutations' returns an ordered iterable so, while 
+        # traversing it, we start with the minimal bunny ID. 
+        for p in permutations(range(1, bunniesNum+1), i):
+            timeOfPath = timeOf(list(p), time)
+            # The first time the if statment below is True -
+            # it means we got to the largest number of retrievable
+            # bunnies and our path goes throw the minimal Indices. 
+            if timeOfPath <= time_limit:
+                return sorted([i-1 for i in p])
+    return []
 
 print solution([
     [0, 2, 2, 2, -1], 
@@ -126,35 +93,35 @@ print solution([
 # Output:
 #     [1, 2]
 
-# print solution([
-#     [0, 1, 1, 1, 1], 
-#     [1, 0, 1, 1, 1], 
-#     [1, 1, 0, 1, 1], 
-#     [1, 1, 1, 0, 1], 
-#     [1, 1, 1, 1, 0]], 
-#     3
-# ) == [0,1]
+print solution([
+    [0, 1, 1, 1, 1], 
+    [1, 0, 1, 1, 1], 
+    [1, 1, 0, 1, 1], 
+    [1, 1, 1, 0, 1], 
+    [1, 1, 1, 1, 0]], 
+    3
+) == [0,1]
 
-# print solution([
-#     [0,-10],
-#     [1,0]
-# ],1) == []
+print solution([
+    [0,-10],
+    [1,0]
+],1) == []
 
-# print solution([
-#     [0, 0, 0, 0, 0], 
-#     [0, 0, 0, 0, 0], 
-#     [0, 0, 0, 0, 0], 
-#     [0, 0, 0, 0, 0], 
-#     [0, 0, 0, 0, 0]], 
-#     0
-# ) == [0,1,2]
+print solution([
+    [0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0], 
+    [0, 0, 0, 0, 0]], 
+    0
+) == [0,1,2]
 
-# print solution([
-#     [0,  1,  5,  5,  2], 
-#     [10, 0,  2,  6,  10], 
-#     [10, 10, 0,  1,  5], 
-#     [10, 10, 10, 0,  1], 
-#     [10, 10, 10, 10, 0]], 
-#     5
-# ) == [0,1,2]
+print solution([
+    [0,  1,  5,  5,  2], 
+    [10, 0,  2,  6,  10], 
+    [10, 10, 0,  1,  5], 
+    [10, 10, 10, 0,  1], 
+    [10, 10, 10, 10, 0]], 
+    5
+) == [0,1,2]
 # times, times_limit
