@@ -124,4 +124,8 @@ print solution([
     [10, 10, 10, 10, 0]], 
     5
 ) == [0,1,2]
-# times, times_limit
+
+# links to challenge 
+# Refer a friend: "https://foobar.withgoogle.com/?eid=VDuOf" (Unused)
+# Refer a friend: "https://foobar.withgoogle.com/?eid=MeheO" (Unused)
+
